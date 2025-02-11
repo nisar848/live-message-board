@@ -13,7 +13,7 @@
     <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
   </div>
   
-  <!-- Main Display Container: Centers Clock/Timer/Stopwatch -->
+  <!-- Main Display Container: Centers the feature panels and holds the feature buttons -->
   <div id="main-display">
     <!-- Clock Container (default view) -->
     <div id="clock-container" class="feature-container">
@@ -25,13 +25,6 @@
           <option value="12">12-Hour</option>
         </select>
       </div>
-    </div>
-    
-    <!-- Feature Buttons Underneath -->
-    <div id="feature-buttons">
-      <button id="btnClock">Clock</button>
-      <button id="btnTimer">Timer</button>
-      <button id="btnStopwatch">Stopwatch</button>
     </div>
     
     <!-- Timer Container (hidden by default) -->
@@ -52,9 +45,16 @@
         <button id="resetStopwatch">Reset</button>
       </div>
     </div>
+    
+    <!-- Feature Buttons (positioned absolutely at the bottom of the main display) -->
+    <div id="feature-buttons">
+      <button id="btnClock">Clock</button>
+      <button id="btnTimer">Timer</button>
+      <button id="btnStopwatch">Stopwatch</button>
+    </div>
   </div>
   
-  <!-- Live Message Board (remains below) -->
+  <!-- Live Message Board (remains below the main display) -->
   <div id="message-board">
     <h2>Live Message Board</h2>
     <div id="messages"></div>
