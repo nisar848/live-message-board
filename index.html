@@ -8,50 +8,53 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Clock Container (default view) -->
-  <div id="clock-container" class="feature-container">
-    <div id="clock" class="digital-display">00:00:00</div>
-    <div id="clock-options">
-      <label for="timeFormat">Select Time Format:</label>
-      <select id="timeFormat">
-        <option value="24">24-Hour</option>
-        <option value="12">12-Hour</option>
-      </select>
-    </div>
-  </div>
-  
-  <!-- Feature Buttons Underneath the Clock -->
-  <div id="feature-buttons">
-    <button id="btnClock">Clock</button>
-    <button id="btnTimer">Timer</button>
-    <button id="btnStopwatch">Stopwatch</button>
-  </div>
-  
-  <!-- Timer Container (hidden by default) -->
-  <div id="timer-container" class="feature-container" style="display: none;">
-    <!-- Editable input field so user can set the timer time directly -->
-    <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" />
-    <div id="timer-controls">
-      <button id="startTimer">Start Timer</button>
-    </div>
-  </div>
-  
-  <!-- Stopwatch Container (hidden by default) -->
-  <div id="stopwatch-container" class="feature-container" style="display: none;">
-    <div id="stopwatchDisplay" class="digital-display">00:00:00</div>
-    <div id="stopwatch-controls">
-      <button id="startStopwatch">Start</button>
-      <button id="stopStopwatch">Stop</button>
-      <button id="resetStopwatch">Reset</button>
-    </div>
-  </div>
-  
   <!-- Fullscreen Toggle Button (fixed at top right) -->
   <div id="fullscreen-container">
     <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
   </div>
   
-  <!-- Live Message Board -->
+  <!-- Main Display Container: Centers Clock/Timer/Stopwatch -->
+  <div id="main-display">
+    <!-- Clock Container (default view) -->
+    <div id="clock-container" class="feature-container">
+      <div id="clock" class="digital-display">00:00:00</div>
+      <div id="clock-options">
+        <label for="timeFormat">Select Time Format:</label>
+        <select id="timeFormat">
+          <option value="24">24-Hour</option>
+          <option value="12">12-Hour</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Feature Buttons Underneath -->
+    <div id="feature-buttons">
+      <button id="btnClock">Clock</button>
+      <button id="btnTimer">Timer</button>
+      <button id="btnStopwatch">Stopwatch</button>
+    </div>
+    
+    <!-- Timer Container (hidden by default) -->
+    <div id="timer-container" class="feature-container" style="display: none;">
+      <!-- Editable input field for setting the timer directly in HH:MM:SS format -->
+      <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" />
+      <div id="timer-controls">
+        <button id="startTimer">Start Timer</button>
+      </div>
+    </div>
+    
+    <!-- Stopwatch Container (hidden by default) -->
+    <div id="stopwatch-container" class="feature-container" style="display: none;">
+      <div id="stopwatchDisplay" class="digital-display">00:00:00</div>
+      <div id="stopwatch-controls">
+        <button id="startStopwatch">Start</button>
+        <button id="stopStopwatch">Stop</button>
+        <button id="resetStopwatch">Reset</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Live Message Board (remains below) -->
   <div id="message-board">
     <h2>Live Message Board</h2>
     <div id="messages"></div>
