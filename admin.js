@@ -1,10 +1,10 @@
-// Import Firebase modules from the CDN
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
+// Import Firebase compat modules so that the global firebase namespace is used
+import firebase from "https://www.gstatic.com/firebasejs/11.8.0/firebase-app-compat.js";
+import "https://www.gstatic.com/firebasejs/11.8.0/firebase-auth-compat.js";
+import "https://www.gstatic.com/firebasejs/11.8.0/firebase-database-compat.js";
 
 // Your Firebase configuration (replace with your actual configuration)
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
   authDomain: "live-message-board.firebaseapp.com",
   projectId: "live-message-board",
@@ -13,102 +13,67 @@ const firebaseConfig = {
   appId: "1:465980009336:web:38b62c2587ded00596b68d",
   measurementId: "G-4KCL1DYY8R"
 };
-
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
 
-// Ensure there's a reCAPTCHA container.
-if (!document.getElementById('recaptcha-container')) {
-  const recaptchaDiv = document.createElement('div');
-  recaptchaDiv.id = 'recaptcha-container';
-  document.body.appendChild(recaptchaDiv);
-}
-
-const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-  size: 'invisible',
-  callback: (response) => {
-    console.log('reCAPTCHA solved');
-  }
-}, auth);
-
-// Optional: force render to check widget ID.
-recaptchaVerifier.render().then((widgetId) => {
-  console.log("reCAPTCHA rendered with widgetId:", widgetId);
+// Sign-out functionality
+document.getElementById("signOutButton").addEventListener("click", function() {
+  firebase.auth().signOut().then(function() {
+    window.location.href = "admin.html"; // Redirect back to login
+  }).catch(function(error) {
+    console.error("Sign out error:", error);
+  });
 });
 
-// ADMIN LOGIN USING PHONE AUTHENTICATION
-const adminLoginForm = document.getElementById('adminLoginForm');
-adminLoginForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const phoneNumber = document.getElementById('adminPhone').value;
-  // Note: Ensure the phone number includes the country code (e.g., +1234567890)
-  signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier)
-    .then((confirmationResult) => {
-      // SMS sent. Prompt admin to enter the verification code.
-      const verificationCode = window.prompt('Enter the verification code you received via SMS:');
-      return confirmationResult.confirm(verificationCode);
-    })
-    .then((result) => {
-      // Admin signed in successfully.
-      console.log('Admin signed in:', result.user);
-      document.getElementById('admin-login').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-      loadPendingMessages();
-    })
-    .catch((error) => {
-      console.error('Error during phone authentication:', error);
-      alert('Authentication failed: ' + error.message);
-    });
-});
-
-// FUNCTION TO LOAD PENDING MESSAGES
+// Function to load pending messages from the "messages" node
 function loadPendingMessages() {
-  // Listen for changes under the "messages" node
-  const messagesRef = ref(database, 'messages');
-  onValue(messagesRef, (snapshot) => {
+  const messagesRef = firebase.database().ref("messages");
+  messagesRef.on("value", function(snapshot) {
     const messages = snapshot.val();
-    const pendingMessagesDiv = document.getElementById('pendingMessages');
-    // Clear existing content.
-    pendingMessagesDiv.innerHTML = '';
-    // Loop through each message.
+    const pendingDiv = document.getElementById("pendingMessages");
+    pendingDiv.innerHTML = ""; // Clear existing content
     for (let key in messages) {
       if (messages.hasOwnProperty(key)) {
         const message = messages[key];
-        // Check if the message is pending approval (if approved is not true).
+        // Only display messages that have not been approved
         if (!message.approved) {
-          // Create a container for this message.
-          const messageDiv = document.createElement('div');
-          // You can also include the timestamp if needed.
+          const messageDiv = document.createElement("div");
           messageDiv.innerHTML = `<span>${message.text}</span>`;
           
-          // Create an Approve button.
-          const approveButton = document.createElement('button');
-          approveButton.textContent = 'Approve';
-          approveButton.addEventListener('click', () => {
-            update(ref(database, 'messages/' + key), { approved: true })
-              .then(() => console.log('Message approved:', key))
-              .catch((error) => console.error('Error approving message:', error));
-          });
+          // Create Approve button
+          const approveBtn = document.createElement("button");
+          approveBtn.textContent = "Approve";
+          approveBtn.onclick = function() {
+            firebase.database().ref("messages/" + key).update({ approved: true })
+              .then(() => console.log("Message approved:", key))
+              .catch((error) => console.error("Error approving message:", error));
+          };
           
-          // Create a Deny button.
-          const denyButton = document.createElement('button');
-          denyButton.textContent = 'Deny';
-          denyButton.addEventListener('click', () => {
-            remove(ref(database, 'messages/' + key))
-              .then(() => console.log('Message denied and removed:', key))
-              .catch((error) => console.error('Error deleting message:', error));
-          });
+          // Create Deny button
+          const denyBtn = document.createElement("button");
+          denyBtn.textContent = "Deny";
+          denyBtn.onclick = function() {
+            firebase.database().ref("messages/" + key).remove()
+              .then(() => console.log("Message denied and removed:", key))
+              .catch((error) => console.error("Error deleting message:", error));
+          };
           
-          // Append buttons to the message container.
-          messageDiv.appendChild(approveButton);
-          messageDiv.appendChild(denyButton);
-          
-          // Append this message container to pending messages.
-          pendingMessagesDiv.appendChild(messageDiv);
+          messageDiv.appendChild(approveBtn);
+          messageDiv.appendChild(denyBtn);
+          pendingDiv.appendChild(messageDiv);
         }
       }
     }
   });
 }
+
+// Listen for auth state changes
+firebase.auth().onAuthStateChanged(function(user) {
+  if (user) {
+    console.log("Admin is signed in:", user);
+    loadPendingMessages();
+  } else {
+    // If not signed in, redirect to the login page
+    window.location.href = "admin.html";
+  }
+});
