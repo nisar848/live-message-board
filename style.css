@@ -11,7 +11,7 @@ html, body {
 /* Main display container: fixed height & centers its content */
 #main-display {
   position: relative;
-  height: 70vh;  /* Fixed height so the layout remains stable */
+  height: 70vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,18 +26,18 @@ html, body {
   justify-content: center;
   width: 80%;
   max-width: 400px;
-  min-height: 300px;  /* Ensure each panel is at least this tall */
+  min-height: 300px;
   margin: 20px auto;
   padding: 20px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.2);  /* Translucent white background */
+  background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-/* Styling for the digital display (for clock, timer, stopwatch) */
+/* Styling for the digital display (clock, timer, stopwatch) */
 .digital-display {
   font-size: 3em;
   margin-bottom: 10px;
@@ -97,11 +97,19 @@ html, body {
   margin: 20px auto;
   padding: 20px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255,255,255,0.8);
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: center;
 }
 
-/* Responsive adjustments */
+/* QR Code container styling */
+#qr-code {
+  margin: 20px auto;
+  width: 200px;
+  height: 200px;
+}
+
+/* Responsive design adjustments */
 @media (max-width: 600px) {
   .digital-display {
     font-size: 2.5em;
