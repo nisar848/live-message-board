@@ -12,3 +12,47 @@ function updateClock() {
 // Update clock every second
 setInterval(updateClock, 1000);
 updateClock(); // initial call
+
+// Timer Functionality
+let timerInterval;
+
+document.getElementById('startTimer').addEventListener('click', function() {
+  const input = document.getElementById('timerInput').value;
+  let timeLeft = parseInt(input, 10);
+  const display = document.getElementById('timerDisplay');
+  clearInterval(timerInterval); // Clear any previous timer
+
+  timerInterval = setInterval(() => {
+    if (timeLeft > 0) {
+      display.textContent = timeLeft;
+      timeLeft--;
+    } else {
+      display.textContent = 'Time is up!';
+      clearInterval(timerInterval);
+    }
+  }, 1000);
+});
+
+// Stopwatch Functionality
+let stopwatchInterval;
+let stopwatchTime = 0;
+
+const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+
+document.getElementById('startStopwatch').addEventListener('click', function() {
+  clearInterval(stopwatchInterval);
+  stopwatchInterval = setInterval(() => {
+    stopwatchTime++;
+    stopwatchDisplay.textContent = stopwatchTime;
+  }, 1000);
+});
+
+document.getElementById('stopStopwatch').addEventListener('click', function() {
+  clearInterval(stopwatchInterval);
+});
+
+document.getElementById('resetStopwatch').addEventListener('click', function() {
+  clearInterval(stopwatchInterval);
+  stopwatchTime = 0;
+  stopwatchDisplay.textContent = stopwatchTime;
+});
