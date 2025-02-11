@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <!-- Responsive design meta tag -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Live Gem Board</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - FirebaseUI</title>
+  <!-- FirebaseUI CSS -->
+  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.css" />
   <style>
-    /* Simple inline styles for admin panel demo */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
@@ -18,67 +17,69 @@
       flex-direction: column;
       align-items: center;
     }
-    #admin-login, #adminPanel {
-      background: rgba(255,255,255,0.2);
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
-      width: 90%;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    input, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      border-radius: 5px;
-      border: none;
-      font-size: 1em;
-    }
-    button {
-      background: rgba(255,255,255,0.6);
-      cursor: pointer;
-    }
-    button:hover {
-      background: rgba(255,255,255,0.8);
-    }
-    #pendingMessages div {
-      background: rgba(0,0,0,0.3);
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #pendingMessages button {
-      width: auto;
-      padding: 5px 10px;
-      margin-left: 5px;
-      font-size: 0.9em;
+    #loader {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <!-- Admin Login Section -->
-  <div id="admin-login">
-    <h1>Admin Login</h1>
-    <!-- In this example, using phone authentication -->
-    <form id="adminLoginForm">
-      <input type="text" id="adminPhone" placeholder="Enter your phone number" required>
-      <button type="submit">Login</button>
-    </form>
-  </div>
+  <h1>Admin Panel - Login</h1>
+  <!-- FirebaseUI container -->
+  <div id="firebaseui-auth-container"></div>
+  <div id="loader">Loading...</div>
 
-  <!-- Admin Panel (hidden until login is successful) -->
-  <div id="adminPanel" style="display: none;">
-    <h2>Pending Messages</h2>
-    <div id="pendingMessages">
-      <!-- Pending messages will be dynamically loaded here -->
-    </div>
-  </div>
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js"></script>
+  <!-- Firebase Authentication -->
+  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-auth.js"></script>
+  <!-- FirebaseUI for Web -->
+  <script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth__en.js"></script>
 
-  <!-- Include the admin JavaScript as a module -->
-  <script src="admin.js" type="module"></script>
+  <script>
+    // Your Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
+      authDomain: "live-message-board.firebaseapp.com",
+      projectId: "live-message-board",
+      storageBucket: "live-message-board.firebasestorage.app",
+      messagingSenderId: "465980009336",
+      appId: "1:465980009336:web:38b62c2587ded00596b68d",
+      measurementId: "G-4KCL1DYY8R"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // FirebaseUI configuration.
+    var uiConfig = {
+      signInSuccessUrl: "adminPanel.html", // URL to redirect to after sign in
+      signInOptions: [
+        {
+          provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+          recaptchaParameters: {
+            // Use an invisible reCAPTCHA.
+            type: 'image',
+            size: 'invisible'
+          },
+          defaultCountry: 'US', // Optional.
+          loginHint: '+1',      // Optional. Prefills the phone number input.
+        }
+      ],
+      // Disable auto-sign in.
+      autoUpgradeAnonymousUsers: false,
+      callbacks: {
+        // Called when a user has been successfully signed in.
+        signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+          console.log("Admin signed in:", authResult.user);
+          // Return true to automatically redirect.
+          return true;
+        }
+      }
+    };
+
+    // Initialize the FirebaseUI Widget using Firebase.
+    var ui = new firebaseui.auth.AuthUI(firebase.auth());
+    // The start method will wait until the DOM is loaded.
+    ui.start('#firebaseui-auth-container', uiConfig);
+  </script>
 </body>
 </html>
