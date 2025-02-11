@@ -30,7 +30,6 @@ if (!document.getElementById('recaptcha-container')) {
 const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
   size: 'invisible',
   callback: (response) => {
-    // reCAPTCHA solved - allow sign in with phone number.
     console.log('reCAPTCHA solved');
   }
 }, auth);
@@ -40,20 +39,18 @@ const adminLoginForm = document.getElementById('adminLoginForm');
 adminLoginForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const phoneNumber = document.getElementById('adminPhone').value;
-  // Note: Make sure the phone number includes the country code (e.g., +1234567890)
+  // Note: Ensure the phone number includes the country code (e.g., +1234567890)
   signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier)
     .then((confirmationResult) => {
-      // SMS sent. Ask admin to enter the verification code.
+      // SMS sent. Prompt admin to enter the verification code.
       const verificationCode = window.prompt('Enter the verification code you received via SMS:');
       return confirmationResult.confirm(verificationCode);
     })
     .then((result) => {
       // Admin signed in successfully.
       console.log('Admin signed in:', result.user);
-      // Hide the login form and display the admin panel.
       document.getElementById('admin-login').style.display = 'none';
       document.getElementById('adminPanel').style.display = 'block';
-      // Load pending messages for moderation.
       loadPendingMessages();
     })
     .catch((error) => {
@@ -64,33 +61,34 @@ adminLoginForm.addEventListener('submit', (e) => {
 
 // FUNCTION TO LOAD PENDING MESSAGES
 function loadPendingMessages() {
+  // Listen for changes under the "messages" node
   const messagesRef = ref(database, 'messages');
   onValue(messagesRef, (snapshot) => {
     const messages = snapshot.val();
     const pendingMessagesDiv = document.getElementById('pendingMessages');
-    // Clear any existing content.
+    // Clear existing content.
     pendingMessagesDiv.innerHTML = '';
-    // Loop through all messages.
+    // Loop through each message.
     for (let key in messages) {
       if (messages.hasOwnProperty(key)) {
         const message = messages[key];
-        // Check if the message is pending approval (approved field is false or missing).
+        // Check if the message is pending approval (if approved is not true).
         if (!message.approved) {
           // Create a container for this message.
           const messageDiv = document.createElement('div');
-          messageDiv.textContent = message.text;
+          // You can also include the timestamp if needed.
+          messageDiv.innerHTML = `<span>${message.text}</span>`;
           
           // Create an Approve button.
           const approveButton = document.createElement('button');
           approveButton.textContent = 'Approve';
           approveButton.addEventListener('click', () => {
-            // Update the message in the database to mark it as approved.
             update(ref(database, 'messages/' + key), { approved: true })
               .then(() => console.log('Message approved:', key))
               .catch((error) => console.error('Error approving message:', error));
           });
           
-          // Create a Deny button to delete the message.
+          // Create a Deny button.
           const denyButton = document.createElement('button');
           denyButton.textContent = 'Deny';
           denyButton.addEventListener('click', () => {
@@ -99,11 +97,11 @@ function loadPendingMessages() {
               .catch((error) => console.error('Error deleting message:', error));
           });
           
-          // Append the buttons to the message container.
+          // Append buttons to the message container.
           messageDiv.appendChild(approveButton);
           messageDiv.appendChild(denyButton);
           
-          // Append the message container to the pending messages div.
+          // Append this message container to pending messages.
           pendingMessagesDiv.appendChild(messageDiv);
         }
       }
