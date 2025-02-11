@@ -162,15 +162,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // QR Code Generation for Message Submission
-  // This generates a QR code in the "qr-code" div that encodes a URL for message submission.
-const qrCodeContainer = document.getElementById('qr-code');
-const submissionUrl = "https://nisar848.github.io/live-message-board/submit.html"; 
-new QRCode(qrCodeContainer, {
-    text: submissionUrl,
-    width: 200,
-    height: 200,
-    colorDark : "#000000",
-    colorLight : "#ffffff",
-    correctLevel : QRCode.CorrectLevel.H
-});
+  // Hardcode the URL for your submit page:
+  const qrCodeContainer = document.getElementById('qr-code');
+  const submissionUrl = "https://nisar848.github.io/live-message-board/submit.html"; 
+  new QRCode(qrCodeContainer, {
+      text: submissionUrl,
+      width: 150,
+      height: 150,
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+  });
 });
