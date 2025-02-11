@@ -115,16 +115,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!document.fullscreenElement) {
       // Request fullscreen on the entire page
       document.documentElement.requestFullscreen().then(() => {
-        // Update the button text to indicate the new action
-        document.getElementById('fullscreenToggle').textContent = "Exit Fullscreen";
+        // Update the button icon to indicate exit fullscreen (here we use a simple "×" icon)
+        document.getElementById('fullscreenToggle').innerHTML = "&#x2715;";
       }).catch(err => {
         console.error(`Error attempting to enable full-screen mode: ${err.message}`);
       });
     } else {
       // If already fullscreen, exit fullscreen mode
       document.exitFullscreen().then(() => {
-        // Reset the button text
-        document.getElementById('fullscreenToggle').textContent = "Go Fullscreen";
+        // Reset the button icon to the fullscreen icon
+        document.getElementById('fullscreenToggle').innerHTML = "&#x26F6;";
       }).catch(err => {
         console.error(`Error attempting to exit full-screen mode: ${err.message}`);
       });
