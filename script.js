@@ -22,6 +22,33 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 
 document.addEventListener('DOMContentLoaded', () => {
+  // FEATURE BUTTONS: Show/hide sections
+  const btnClock = document.getElementById('btnClock');
+  const btnTimer = document.getElementById('btnTimer');
+  const btnStopwatch = document.getElementById('btnStopwatch');
+  
+  const clockContainer = document.getElementById('clock-container');
+  const timerContainer = document.getElementById('timer-container');
+  const stopwatchContainer = document.getElementById('stopwatch-container');
+  
+  btnClock.addEventListener('click', () => {
+    clockContainer.style.display = "block";
+    timerContainer.style.display = "none";
+    stopwatchContainer.style.display = "none";
+  });
+  
+  btnTimer.addEventListener('click', () => {
+    clockContainer.style.display = "none";
+    timerContainer.style.display = "block";
+    stopwatchContainer.style.display = "none";
+  });
+  
+  btnStopwatch.addEventListener('click', () => {
+    clockContainer.style.display = "none";
+    timerContainer.style.display = "none";
+    stopwatchContainer.style.display = "block";
+  });
+  
   // LIVE CLOCK: Update every second using user's local time and configurable format
   function updateClock() {
     const now = new Date();
@@ -31,47 +58,32 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Read the selected time format from the dropdown
     const timeFormat = document.getElementById('timeFormat').value;
-    
     let period = '';
-    
-    // If the user selects 12-Hour format, convert the hours and determine AM/PM
     if (timeFormat === '12') {
       period = hours >= 12 ? ' PM' : ' AM';
-      hours = hours % 12; // Convert 24-hour time to 12-hour format
-      if (hours === 0) { // If hours is 0, it should be 12 for 12-hour format
+      hours = hours % 12;
+      if (hours === 0) {
         hours = 12;
       }
     }
-    
-    // Format each unit to always have two digits
     const hoursString = String(hours).padStart(2, '0');
     const minutesString = String(minutes).padStart(2, '0');
     const secondsString = String(seconds).padStart(2, '0');
-    
-    // Combine into the final time string
     const timeString = `${hoursString}:${minutesString}:${secondsString}${period}`;
-    
-    // Update the clock element with the formatted time
     document.getElementById('clock').textContent = timeString;
   }
   
-  // Update the clock immediately and then every second
   updateClock();
   setInterval(updateClock, 1000);
-  
-  // Update the clock immediately when the dropdown value changes
   document.getElementById('timeFormat').addEventListener('change', updateClock);
   
   // TIMER: Countdown based on user input
-  let timerInterval; // Holds the timer interval
+  let timerInterval;
   document.getElementById('startTimer').addEventListener('click', () => {
     const timerInputValue = document.getElementById('timerInput').value;
     let timeLeft = parseInt(timerInputValue, 10);
     const timerDisplay = document.getElementById('timerDisplay');
-
-    // Clear any existing timer to avoid duplicates
     clearInterval(timerInterval);
-    
     timerInterval = setInterval(() => {
       if (timeLeft > 0) {
         timerDisplay.textContent = timeLeft;
@@ -84,11 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // STOPWATCH: Count up from zero
-  let stopwatchInterval; // Holds the stopwatch interval
-  let stopwatchTime = 0;   // Elapsed seconds
+  let stopwatchInterval;
+  let stopwatchTime = 0;
   const stopwatchDisplay = document.getElementById('stopwatchDisplay');
   
-  // Start the stopwatch
   document.getElementById('startStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
     stopwatchInterval = setInterval(() => {
@@ -97,12 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
   });
   
-  // Stop the stopwatch
   document.getElementById('stopStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
   });
   
-  // Reset the stopwatch
   document.getElementById('resetStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
     stopwatchTime = 0;
@@ -111,22 +120,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // FULLSCREEN TOGGLE: Allows users to switch to and from fullscreen mode
   document.getElementById('fullscreenToggle').addEventListener('click', () => {
-    // Check if the document is already in fullscreen mode
     if (!document.fullscreenElement) {
-      // Request fullscreen on the entire page
       document.documentElement.requestFullscreen().then(() => {
-        // Update the button icon to indicate exit fullscreen (using a cross icon)
         document.getElementById('fullscreenToggle').textContent = "✕";
       }).catch(err => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        console.error(`Error enabling fullscreen: ${err.message}`);
       });
     } else {
-      // If already fullscreen, exit fullscreen mode
       document.exitFullscreen().then(() => {
-        // Reset the button icon to the fullscreen icon
         document.getElementById('fullscreenToggle').textContent = "⛶";
       }).catch(err => {
-        console.error(`Error attempting to exit full-screen mode: ${err.message}`);
+        console.error(`Error exiting fullscreen: ${err.message}`);
       });
     }
   });
