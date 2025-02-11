@@ -8,21 +8,28 @@ html, body {
   background: #f0f0f0;
 }
 
-/* Clock Container */
-#clock-container {
+/* Common styling for the feature containers (Clock, Timer, Stopwatch) */
+.feature-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 50vh; /* Takes half the viewport height */
-}
-#clock {
-  font-size: 4em;
+  /* You can adjust these values as needed for design consistency */
+  width: 80%;
+  margin: 20px auto;
   background: #fff;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
+
+/* Clock-specific styling */
+#clock {
+  font-size: 4em;
+  margin-bottom: 10px;
+}
+
+/* Clock options styling */
 #clock-options {
   margin-top: 10px;
 }
@@ -37,16 +44,6 @@ html, body {
   padding: 10px 20px;
   font-size: 1em;
   cursor: pointer;
-}
-
-/* Timer and Stopwatch Containers */
-#timer-container, #stopwatch-container {
-  width: 90%;
-  margin: 20px auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 /* Live Message Board */
