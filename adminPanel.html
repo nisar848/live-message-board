@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Live Gem Board</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Inline styling for demo purposes */
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #adminPanel {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      margin-top: 20px;
+      text-align: center;
+    }
+    #pendingMessages div {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #pendingMessages button {
+      padding: 5px 10px;
+      margin-left: 5px;
+      font-size: 0.9em;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.6);
+      color: #333;
+      transition: background 0.3s ease;
+    }
+    #pendingMessages button:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+    #signOutButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.6);
+      color: #333;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    #signOutButton:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <div id="adminPanel">
+    <h2>Pending Messages</h2>
+    <div id="pendingMessages">
+      <!-- Pending messages will be loaded here -->
+    </div>
+    <button id="signOutButton">Sign Out</button>
+  </div>
+
+  <!-- Load Firebase compat libraries -->
+  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Your Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
+      authDomain: "live-message-board.firebaseapp.com",
+      projectId: "live-message-board",
+      storageBucket: "live-message-board.firebasestorage.app",
+      messagingSenderId: "465980009336",
+      appId: "1:465980009336:web:38b62c2587ded00596b68d",
+      measurementId: "G-4KCL1DYY8R"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Sign-out functionality
+    document.getElementById('signOutButton').addEventListener('click', function() {
+      firebase.auth().signOut().then(function() {
+        // Sign-out successful. Redirect to the login page.
+        window.location.href = "admin.html";
+      }).catch(function(error) {
+        console.error("Sign out error:", error);
+      });
+    });
+
+    // Function to load pending messages from the "messages" node.
+    function loadPendingMessages() {
+      var messagesRef = firebase.database().ref('messages');
+      messagesRef.on('value', function(snapshot) {
+        var messages = snapshot.val();
+        var pendingDiv = document.getElementById('pendingMessages');
+        pendingDiv.innerHTML = ''; // Clear current messages
+        for (var key in messages) {
+          if (messages.hasOwnProperty(key)) {
+            var message = messages[key];
+            // Display only messages that have not been approved
+            if (!message.approved) {
+              var messageDiv = document.createElement('div');
+              messageDiv.innerHTML = '<span>' + message.text + '</span>';
+
+              // Approve button
+              var approveBtn = document.createElement('button');
+              approveBtn.textContent = 'Approve';
+              approveBtn.onclick = (function(messageKey) {
+                return function() {
+                  firebase.database().ref('messages/' + messageKey).update({ approved: true });
+                }
+              })(key);
+
+              // Deny button
+              var denyBtn = document.createElement('button');
+              denyBtn.textContent = 'Deny';
+              denyBtn.onclick = (function(messageKey) {
+                return function() {
+                  firebase.database().ref('messages/' + messageKey).remove();
+                }
+              })(key);
+
+              messageDiv.appendChild(approveBtn);
+              messageDiv.appendChild(denyBtn);
+              pendingDiv.appendChild(messageDiv);
+            }
+          }
+        }
+      });
+    }
+
+    // Check if the user is already authenticated (optional)
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        console.log("Admin is signed in:", user);
+        loadPendingMessages();
+      } else {
+        // If not signed in, redirect back to the login page
+        window.location.href = "admin.html";
+      }
+    });
+  </script>
+</body>
+</html>
