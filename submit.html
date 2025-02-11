@@ -101,13 +101,13 @@
         alert("Please enter a message before submitting.");
         return;
       }
-      // Push the message to the "messages" node in the realtime database
-      push(ref(database, "messages"), {
+      // Push the message to the "pendingMessages" node for admin moderation.
+      push(ref(database, "pendingMessages"), {
         text: message,
         timestamp: Date.now()
       })
       .then(() => {
-        alert("Your gem has been submitted!");
+        alert("Your gem has been submitted and is awaiting approval.");
         document.getElementById('messageInput').value = "";
       })
       .catch((error) => {
