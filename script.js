@@ -22,7 +22,7 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 
 document.addEventListener('DOMContentLoaded', () => {
-  // FEATURE BUTTONS: Show/hide containers
+  // FEATURE BUTTONS: Show/hide containers using "flex" to preserve centering
   const btnClock = document.getElementById('btnClock');
   const btnTimer = document.getElementById('btnTimer');
   const btnStopwatch = document.getElementById('btnStopwatch');
@@ -32,22 +32,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const stopwatchContainer = document.getElementById('stopwatch-container');
   
   btnClock.addEventListener('click', () => {
-    clockContainer.style.display = "flex";     // Use "flex" to preserve centering
+    clockContainer.style.display = "flex";
     timerContainer.style.display = "none";
     stopwatchContainer.style.display = "none";
   });
   
   btnTimer.addEventListener('click', () => {
     clockContainer.style.display = "none";
-    timerContainer.style.display = "flex";       // Show timer with flex layout
+    timerContainer.style.display = "flex";
     stopwatchContainer.style.display = "none";
   });
   
   btnStopwatch.addEventListener('click', () => {
     clockContainer.style.display = "none";
     timerContainer.style.display = "none";
-    stopwatchContainer.style.display = "flex";     // Show stopwatch with flex layout
+    stopwatchContainer.style.display = "flex";
   });
+  
+  // Helper function to format seconds as HH:MM:SS
+  function formatTime(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
   
   // LIVE CLOCK: Update every second using user's local time and configurable format
   function updateClock() {
@@ -77,34 +85,34 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(updateClock, 1000);
   document.getElementById('timeFormat').addEventListener('change', updateClock);
   
-  // TIMER: Countdown based on user input
+  // TIMER: Countdown based on user input, displayed in HH:MM:SS format
   let timerInterval;
   document.getElementById('startTimer').addEventListener('click', () => {
     const timerInputValue = document.getElementById('timerInput').value;
-    let timeLeft = parseInt(timerInputValue, 10);
+    let totalSeconds = parseInt(timerInputValue, 10);
     const timerDisplay = document.getElementById('timerDisplay');
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-      if (timeLeft > 0) {
-        timerDisplay.textContent = timeLeft;
-        timeLeft--;
+      if (totalSeconds > 0) {
+        timerDisplay.textContent = formatTime(totalSeconds);
+        totalSeconds--;
       } else {
-        timerDisplay.textContent = 'Time is up!';
+        timerDisplay.textContent = "Time is up!";
         clearInterval(timerInterval);
       }
     }, 1000);
   });
   
-  // STOPWATCH: Count up from zero
+  // STOPWATCH: Count up from zero and display in HH:MM:SS format
   let stopwatchInterval;
-  let stopwatchTime = 0;
+  let stopwatchSeconds = 0;
   const stopwatchDisplay = document.getElementById('stopwatchDisplay');
   
   document.getElementById('startStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
     stopwatchInterval = setInterval(() => {
-      stopwatchTime++;
-      stopwatchDisplay.textContent = stopwatchTime;
+      stopwatchSeconds++;
+      stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
     }, 1000);
   });
   
@@ -114,8 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('resetStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
-    stopwatchTime = 0;
-    stopwatchDisplay.textContent = stopwatchTime;
+    stopwatchSeconds = 0;
+    stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
   });
   
   // FULLSCREEN TOGGLE: Switch to/from fullscreen mode
