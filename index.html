@@ -8,19 +8,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Feature Buttons for switching between Clock, Timer, and Stopwatch -->
-  <div id="feature-buttons">
-    <button id="btnClock">Clock</button>
-    <button id="btnTimer">Timer</button>
-    <button id="btnStopwatch">Stopwatch</button>
-  </div>
-  
-  <!-- Fullscreen Toggle Button (fixed at top right) -->
-  <div id="fullscreen-container">
-    <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
-  </div>
-  
-  <!-- Clock Container (default view) -->
+  <!-- Clock Container -->
   <div id="clock-container">
     <div id="clock">00:00:00</div>
     <div id="clock-options">
@@ -30,6 +18,13 @@
         <option value="12">12-Hour</option>
       </select>
     </div>
+  </div>
+  
+  <!-- Feature Buttons Underneath the Clock -->
+  <div id="feature-buttons">
+    <button id="btnClock">Clock</button>
+    <button id="btnTimer">Timer</button>
+    <button id="btnStopwatch">Stopwatch</button>
   </div>
   
   <!-- Timer Container (hidden by default) -->
@@ -49,7 +44,12 @@
     <div id="stopwatchDisplay">0</div>
   </div>
   
-  <!-- Live Message Board (unchanged) -->
+  <!-- Fullscreen Toggle Button (fixed at top right) -->
+  <div id="fullscreen-container">
+    <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
+  </div>
+  
+  <!-- Live Message Board -->
   <div id="message-board">
     <h2>Live Message Board</h2>
     <div id="messages"></div>
