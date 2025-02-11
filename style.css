@@ -1,0 +1,42 @@
+/* Ensure the page uses the full screen height and width */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+}
+
+/* Use Flexbox to center the clock vertically and horizontally */
+#clock-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50vh; /* Takes half the viewport height */
+}
+
+#clock {
+  font-size: 4em;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Style for timer, stopwatch, and message board */
+#controls, #message-board {
+  width: 90%;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Responsive design for small devices */
+@media (max-width: 600px) {
+  #clock {
+    font-size: 2.5em;
+  }
+}
