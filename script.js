@@ -1,3 +1,26 @@
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
+
+// Firebase configuration (replace with your actual configuration)
+const firebaseConfig = {
+  apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
+  authDomain: "live-message-board.firebaseapp.com",
+  projectId: "live-message-board",
+  storageBucket: "live-message-board.firebasestorage.app",
+  messagingSenderId: "465980009336",
+  appId: "1:465980009336:web:38b62c2587ded00596b68d",
+  measurementId: "G-4KCL1DYY8R"
+};
+
+// Initialize Firebase and services
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+const database = getDatabase(app);
+
 // Clock Functionality
 function updateClock() {
   const clockElement = document.getElementById('clock');
