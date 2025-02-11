@@ -8,44 +8,48 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Feature Buttons for switching between Clock, Timer, and Stopwatch -->
+  <div id="feature-buttons">
+    <button id="btnClock">Clock</button>
+    <button id="btnTimer">Timer</button>
+    <button id="btnStopwatch">Stopwatch</button>
+  </div>
   
-  <!-- Fullscreen Toggle Button as a direct child of body -->
+  <!-- Fullscreen Toggle Button (fixed at top right) -->
   <div id="fullscreen-container">
     <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
   </div>
-
-  <!-- Container for the clock -->
+  
+  <!-- Clock Container (default view) -->
   <div id="clock-container">
     <div id="clock">00:00:00</div>
-  </div>
-  
-  <!-- Clock Options: Choose between 24-Hour and 12-Hour format -->
-  <div id="clock-options">
-    <label for="timeFormat">Select Time Format:</label>
-    <select id="timeFormat">
-      <option value="24">24-Hour</option>
-      <option value="12">12-Hour</option>
-    </select>
-  </div>
-
-  <!-- Container for timer and stopwatch -->
-  <div id="controls">
-    <div id="timer">
-      <h2>Timer</h2>
-      <input type="number" id="timerInput" placeholder="Seconds">
-      <button id="startTimer">Start Timer</button>
-      <div id="timerDisplay">0</div>
-    </div>
-    <div id="stopwatch">
-      <h2>Stopwatch</h2>
-      <button id="startStopwatch">Start</button>
-      <button id="stopStopwatch">Stop</button>
-      <button id="resetStopwatch">Reset</button>
-      <div id="stopwatchDisplay">0</div>
+    <div id="clock-options">
+      <label for="timeFormat">Select Time Format:</label>
+      <select id="timeFormat">
+        <option value="24">24-Hour</option>
+        <option value="12">12-Hour</option>
+      </select>
     </div>
   </div>
   
-  <!-- Live message board -->
+  <!-- Timer Container (hidden by default) -->
+  <div id="timer-container" style="display: none;">
+    <h2>Timer</h2>
+    <input type="number" id="timerInput" placeholder="Seconds">
+    <button id="startTimer">Start Timer</button>
+    <div id="timerDisplay">0</div>
+  </div>
+  
+  <!-- Stopwatch Container (hidden by default) -->
+  <div id="stopwatch-container" style="display: none;">
+    <h2>Stopwatch</h2>
+    <button id="startStopwatch">Start</button>
+    <button id="stopStopwatch">Stop</button>
+    <button id="resetStopwatch">Reset</button>
+    <div id="stopwatchDisplay">0</div>
+  </div>
+  
+  <!-- Live Message Board (unchanged) -->
   <div id="message-board">
     <h2>Live Message Board</h2>
     <div id="messages"></div>
@@ -55,7 +59,7 @@
     </form>
   </div>
   
-  <!-- Footer with copyright notice -->
+  <!-- Footer -->
   <footer>
     <p>&copy; Zain Nisar 2025</p>
   </footer>
