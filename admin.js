@@ -19,20 +19,24 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-// Ensure there's a reCAPTCHA container. If not in your HTML, create one.
+// Ensure there's a reCAPTCHA container.
 if (!document.getElementById('recaptcha-container')) {
   const recaptchaDiv = document.createElement('div');
   recaptchaDiv.id = 'recaptcha-container';
   document.body.appendChild(recaptchaDiv);
 }
 
-// Set up an invisible reCAPTCHA verifier
 const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
   size: 'invisible',
   callback: (response) => {
     console.log('reCAPTCHA solved');
   }
 }, auth);
+
+// Optional: force render to check widget ID.
+recaptchaVerifier.render().then((widgetId) => {
+  console.log("reCAPTCHA rendered with widgetId:", widgetId);
+});
 
 // ADMIN LOGIN USING PHONE AUTHENTICATION
 const adminLoginForm = document.getElementById('adminLoginForm');
