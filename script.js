@@ -160,4 +160,31 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+  
+  // QR CODE SCANNER for the message board using html5-qrcode
+  function onScanSuccess(decodedText, decodedResult) {
+    console.log(`QR Code detected: ${decodedText}`, decodedResult);
+    // Append the decoded text as a new message
+    const messagesDiv = document.getElementById("messages");
+    const newMessageElem = document.createElement("div");
+    newMessageElem.textContent = decodedText;
+    messagesDiv.appendChild(newMessageElem);
+    // Optionally, clear the scanner after a successful scan:
+    html5QrcodeScanner.clear().then(() => {
+      console.log("QR Code scanning cleared.");
+    }).catch(error => {
+      console.error("Failed to clear QR Code scanning.", error);
+    });
+  }
+  
+  function onScanFailure(error) {
+    // You can log scan failures or ignore them
+    // console.warn(`QR Code scan error: ${error}`);
+  }
+  
+  // Instantiate the QR code scanner and render it in the "qr-reader" div
+  const html5QrcodeScanner = new Html5QrcodeScanner(
+      "qr-reader", { fps: 10, qrbox: 250 }
+  );
+  html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 });
