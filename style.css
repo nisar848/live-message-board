@@ -1,21 +1,41 @@
-/* Set a modern gradient background */
+/* Use the full viewport and prevent scrolling */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  overflow: hidden;
 }
 
-/* Main display container: fixed height & centers its content */
+/* Body as a flex container dividing the viewport vertically */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main display container (Clock/Timer/Stopwatch) occupies 50% of the viewport */
 #main-display {
+  flex: 0 0 50%;
   position: relative;
-  height: 70vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* Message board occupies the remaining 50% */
+#message-board {
+  flex: 1;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.8);
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  text-align: center;
+  overflow: auto;
 }
 
 /* Glassmorphism styling for feature containers (Clock, Timer, Stopwatch) */
@@ -24,23 +44,23 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 80%;
-  max-width: 400px;
-  min-height: 300px;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 20px;
+  width: 90%;
+  max-width: 350px;
+  min-height: 180px;
+  margin: 5px auto;
+  padding: 10px;
+  border-radius: 15px;
   background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Styling for the digital display (clock, timer, stopwatch) */
+/* Digital display styling for Clock/Timer/Stopwatch */
 .digital-display {
-  font-size: 3em;
-  margin-bottom: 10px;
+  font-size: 2em;
+  margin-bottom: 5px;
   text-align: center;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -48,28 +68,28 @@ html, body {
 
 /* Clock options styling */
 #clock-options {
-  margin-top: 10px;
+  margin-top: 5px;
   text-align: center;
   color: #fff;
 }
 
-/* Feature Buttons: Absolutely position at the bottom-center of main-display */
+/* Feature Buttons: Positioned at the bottom-center of main-display */
 #feature-buttons {
   position: absolute;
-  bottom: 20px;
+  bottom: 5px;
   left: 50%;
   transform: translateX(-50%);
 }
 #feature-buttons button {
-  margin: 0 10px;
-  padding: 10px 20px;
-  font-size: 1em;
+  margin: 0 5px;
+  padding: 5px 10px;
+  font-size: 0.9em;
   cursor: pointer;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.3);
   color: #fff;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: background 0.3s ease;
 }
 #feature-buttons button:hover {
@@ -79,39 +99,38 @@ html, body {
 /* Fullscreen toggle button positioning */
 #fullscreen-container {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: 5px;
+  right: 5px;
   z-index: 9999;
 }
 #fullscreenToggle {
   background: none;
   border: none;
-  font-size: 1.8em;
+  font-size: 1.5em;
   cursor: pointer;
   color: #fff;
 }
 
-/* Live Message Board styling */
-#message-board {
-  width: 90%;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.8);
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  text-align: center;
+/* Message Board specific styling */
+#message-board h2 {
+  margin-top: 0;
+  font-size: 1.5em;
 }
-
-/* QR Code container styling */
+#messages {
+  margin: 5px 0;
+  text-align: left;
+  max-height: 40%;
+  overflow-y: auto;
+}
 #qr-code {
-  margin: 20px auto;
-  width: 200px;
-  height: 200px;
+  margin: 10px auto;
+  width: 150px;
+  height: 150px;
 }
 
-/* Responsive design adjustments */
+/* Responsive adjustments */
 @media (max-width: 600px) {
   .digital-display {
-    font-size: 2.5em;
+    font-size: 1.5em;
   }
 }
