@@ -50,31 +50,28 @@
 
     // FirebaseUI configuration.
     var uiConfig = {
-      signInSuccessUrl: "adminPanel.html", // URL to redirect to after sign in
+      signInSuccessUrl: "adminPanel.html", // Redirect here after sign-in.
       signInOptions: [
         {
           provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
           recaptchaParameters: {
-            // Use an invisible reCAPTCHA.
             type: 'image',
             size: 'invisible'
           },
-          defaultCountry: 'US', // Optional.
-          loginHint: '+1',      // Optional. Prefills the phone number input.
+          defaultCountry: 'US',
+          loginHint: '+1'
         }
       ],
       autoUpgradeAnonymousUsers: false,
       callbacks: {
-        // Called when a user has been successfully signed in.
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
           console.log("Admin signed in:", authResult.user);
-          // Return true to automatically redirect.
           return true;
         }
       }
     };
 
-    // Initialize the FirebaseUI Widget using Firebase.
+    // Initialize FirebaseUI Widget.
     var ui = new firebaseui.auth.AuthUI(firebase.auth());
     ui.start('#firebaseui-auth-container', uiConfig);
   </script>
