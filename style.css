@@ -8,13 +8,12 @@ html, body {
   background: #f0f0f0;
 }
 
-/* Common styling for the feature containers (Clock, Timer, Stopwatch) */
+/* Common styling for feature containers (Clock, Timer, Stopwatch) */
 .feature-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* You can adjust these values as needed for design consistency */
   width: 80%;
   margin: 20px auto;
   background: #fff;
@@ -23,8 +22,8 @@ html, body {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Clock-specific styling */
-#clock {
+/* Styling for the digital display (clock, timer, stopwatch) */
+.digital-display {
   font-size: 4em;
   margin-bottom: 10px;
 }
@@ -46,23 +45,6 @@ html, body {
   cursor: pointer;
 }
 
-/* Live Message Board */
-#message-board {
-  width: 90%;
-  margin: 20px auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-/* Responsive design for small devices */
-@media (max-width: 600px) {
-  #clock {
-    font-size: 2.5em;
-  }
-}
-
 /* Fullscreen Toggle Button Positioning */
 #fullscreen-container {
   position: fixed;
@@ -75,4 +57,21 @@ html, body {
   border: none;
   font-size: 1.8em;
   cursor: pointer;
+}
+
+/* Live Message Board Styling */
+#message-board {
+  width: 90%;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Responsive design for small devices */
+@media (max-width: 600px) {
+  .digital-display {
+    font-size: 2.5em;
+  }
 }
