@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Submit Your Gem</title>
+  <style>
+    /* A modern, mobile-friendly style with a glass look */
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.8em;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-size: 1em;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      resize: vertical;
+      margin-bottom: 15px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.6);
+      color: #333;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+    a.back-link {
+      display: block;
+      margin-top: 10px;
+      color: #fff;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Submit Your Gem</h1>
+    <textarea id="messageInput" placeholder="Type your gem, message, or reflection here..."></textarea>
+    <button id="submitButton">Submit</button>
+    <a class="back-link" href="index.html">Back to Live Gem Board</a>
+  </div>
+  
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script type="module">
+    // Import Firebase modules from the CDN
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
+    
+    // Your Firebase configuration (same as in your main project)
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
+      authDomain: "live-message-board.firebaseapp.com",
+      projectId: "live-message-board",
+      storageBucket: "live-message-board.firebasestorage.app",
+      messagingSenderId: "465980009336",
+      appId: "1:465980009336:web:38b62c2587ded00596b68d",
+      measurementId: "G-4KCL1DYY8R"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    
+    const submitButton = document.getElementById('submitButton');
+    submitButton.addEventListener('click', () => {
+      const message = document.getElementById('messageInput').value.trim();
+      if (message === "") {
+        alert("Please enter a message before submitting.");
+        return;
+      }
+      // Push the message to the "messages" node in the realtime database
+      push(ref(database, "messages"), {
+        text: message,
+        timestamp: Date.now()
+      })
+      .then(() => {
+        alert("Your gem has been submitted!");
+        document.getElementById('messageInput').value = "";
+      })
+      .catch((error) => {
+        console.error("Error submitting message:", error);
+        alert("There was an error submitting your message. Please try again.");
+      });
+    });
+  </script>
+</body>
+</html>
