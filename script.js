@@ -32,21 +32,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const stopwatchContainer = document.getElementById('stopwatch-container');
   
   btnClock.addEventListener('click', () => {
-    clockContainer.style.display = "block";
+    clockContainer.style.display = "flex";     // Use "flex" to preserve centering
     timerContainer.style.display = "none";
     stopwatchContainer.style.display = "none";
   });
   
   btnTimer.addEventListener('click', () => {
     clockContainer.style.display = "none";
-    timerContainer.style.display = "block";
+    timerContainer.style.display = "flex";       // Show timer with flex layout
     stopwatchContainer.style.display = "none";
   });
   
   btnStopwatch.addEventListener('click', () => {
     clockContainer.style.display = "none";
     timerContainer.style.display = "none";
-    stopwatchContainer.style.display = "block";
+    stopwatchContainer.style.display = "flex";     // Show stopwatch with flex layout
   });
   
   // LIVE CLOCK: Update every second using user's local time and configurable format
