@@ -28,10 +28,9 @@
   <div id="firebaseui-auth-container"></div>
   <div id="loader">Loading...</div>
 
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js"></script>
-  <!-- Firebase Authentication -->
-  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-auth.js"></script>
+  <!-- Load Firebase compat libraries so that global 'firebase' is defined -->
+  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-auth-compat.js"></script>
   <!-- FirebaseUI for Web -->
   <script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth__en.js"></script>
 
@@ -64,7 +63,6 @@
           loginHint: '+1',      // Optional. Prefills the phone number input.
         }
       ],
-      // Disable auto-sign in.
       autoUpgradeAnonymousUsers: false,
       callbacks: {
         // Called when a user has been successfully signed in.
@@ -78,7 +76,6 @@
 
     // Initialize the FirebaseUI Widget using Firebase.
     var ui = new firebaseui.auth.AuthUI(firebase.auth());
-    // The start method will wait until the DOM is loaded.
     ui.start('#firebaseui-auth-container', uiConfig);
   </script>
 </body>
