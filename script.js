@@ -115,8 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!document.fullscreenElement) {
       // Request fullscreen on the entire page
       document.documentElement.requestFullscreen().then(() => {
-        // Update the button icon to indicate exit fullscreen (here we use a simple "×" icon)
-        document.getElementById('fullscreenToggle').innerHTML = "&#x2715;";
+        // Update the button icon to indicate exit fullscreen (using a cross icon)
+        document.getElementById('fullscreenToggle').textContent = "✕";
       }).catch(err => {
         console.error(`Error attempting to enable full-screen mode: ${err.message}`);
       });
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // If already fullscreen, exit fullscreen mode
       document.exitFullscreen().then(() => {
         // Reset the button icon to the fullscreen icon
-        document.getElementById('fullscreenToggle').innerHTML = "&#x26F6;";
+        document.getElementById('fullscreenToggle').textContent = "⛶";
       }).catch(err => {
         console.error(`Error attempting to exit full-screen mode: ${err.message}`);
       });
