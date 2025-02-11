@@ -1,4 +1,4 @@
-/* Set a gradient background for a modern feel */
+/* Set a modern gradient background */
 html, body {
   margin: 0;
   padding: 0;
@@ -8,16 +8,17 @@ html, body {
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
 }
 
-/* Main display container centers its content vertically & horizontally */
+/* Main display container: fixed height & centers its content */
 #main-display {
+  position: relative;
+  height: 70vh;  /* Fixed height so the layout remains stable */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 70vh;  /* Adjust as needed so the feature cards stay centered */
 }
 
-/* Glassmorphism styling for feature containers */
+/* Glassmorphism styling for feature containers (Clock, Timer, Stopwatch) */
 .feature-container {
   display: flex;
   flex-direction: column;
@@ -25,17 +26,18 @@ html, body {
   justify-content: center;
   width: 80%;
   max-width: 400px;
+  min-height: 300px;  /* Ensure each panel is at least this tall */
   margin: 20px auto;
   padding: 20px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.2);  /* Translucent background */
+  background: rgba(255, 255, 255, 0.2);  /* Translucent white background */
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-/* Digital display styling (for clock, timer, stopwatch) */
+/* Styling for the digital display (for clock, timer, stopwatch) */
 .digital-display {
   font-size: 3em;
   margin-bottom: 10px;
@@ -51,10 +53,12 @@ html, body {
   color: #fff;
 }
 
-/* Feature Buttons styling */
+/* Feature Buttons: Absolutely position at the bottom-center of main-display */
 #feature-buttons {
-  text-align: center;
-  margin: 20px 0;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 #feature-buttons button {
   margin: 0 10px;
@@ -93,11 +97,11 @@ html, body {
   margin: 20px auto;
   padding: 20px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Responsive design adjustments */
+/* Responsive adjustments */
 @media (max-width: 600px) {
   .digital-display {
     font-size: 2.5em;
