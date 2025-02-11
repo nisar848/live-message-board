@@ -26,11 +26,13 @@ html, body {
 .digital-display {
   font-size: 4em;
   margin-bottom: 10px;
+  text-align: center; /* Center the text inside the display */
 }
 
 /* Clock options styling */
 #clock-options {
   margin-top: 10px;
+  text-align: center;
 }
 
 /* Feature Buttons - Centered Under the Clock */
