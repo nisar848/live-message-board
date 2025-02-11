@@ -41,9 +41,9 @@ html, body {
   }
 }
 
-/* Position the fullscreen container at the top right */
+/* Position the fullscreen container fixed at the top right of the viewport */
 #fullscreen-container {
-  position: absolute;
+  position: fixed;
   top: 10px;
   right: 10px;
   z-index: 1000;
