@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel - Live Gem Board</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Admin Panel - FirebaseUI</title>
+  <!-- FirebaseUI CSS -->
+  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.css" />
   <style>
-    /* Inline styling for demo purposes */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
@@ -17,72 +17,25 @@
       flex-direction: column;
       align-items: center;
     }
-    #adminPanel {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 600px;
-      width: 90%;
+    #loader {
       margin-top: 20px;
-      text-align: center;
-    }
-    #pendingMessages div {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #pendingMessages button {
-      padding: 5px 10px;
-      margin-left: 5px;
-      font-size: 0.9em;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background: rgba(255, 255, 255, 0.6);
-      color: #333;
-      transition: background 0.3s ease;
-    }
-    #pendingMessages button:hover {
-      background: rgba(255, 255, 255, 0.8);
-    }
-    #signOutButton {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 1em;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.6);
-      color: #333;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    #signOutButton:hover {
-      background: rgba(255, 255, 255, 0.8);
     }
   </style>
 </head>
 <body>
-  <h1>Admin Panel</h1>
-  <div id="adminPanel">
-    <h2>Pending Messages</h2>
-    <div id="pendingMessages">
-      <!-- Pending messages will be loaded here -->
-    </div>
-    <button id="signOutButton">Sign Out</button>
-  </div>
+  <h1>Admin Panel - Login</h1>
+  <!-- FirebaseUI container -->
+  <div id="firebaseui-auth-container"></div>
+  <div id="loader">Loading...</div>
 
-  <!-- Load Firebase compat libraries in proper order -->
+  <!-- Load Firebase compat libraries so that global 'firebase' is defined -->
   <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-database-compat.js"></script>
+  <!-- FirebaseUI for Web -->
+  <script src="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.js"></script>
 
-  <!-- Admin Panel Script -->
   <script>
-    // Firebase configuration
+    // Your Firebase configuration
     var firebaseConfig = {
       apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
       authDomain: "live-message-board.firebaseapp.com",
@@ -92,89 +45,39 @@
       appId: "1:465980009336:web:38b62c2587ded00596b68d",
       measurementId: "G-4KCL1DYY8R"
     };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
 
-    // Initialize Firebase if it hasn't been initialized already
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    // Sign-out functionality
-    document.getElementById("signOutButton").addEventListener("click", function() {
-      firebase.auth().signOut().then(function() {
-        window.location.href = "admin.html"; // Redirect back to login
-      }).catch(function(error) {
-        console.error("Sign out error:", error);
-      });
-    });
-
-    // Function to load pending messages from the "messages" node.
-    function loadPendingMessages() {
-      var messagesRef = firebase.database().ref("messages");
-      messagesRef.on("value", function(snapshot) {
-        console.log("Snapshot received:", snapshot.val());
-        var messages = snapshot.val();
-        var pendingDiv = document.getElementById("pendingMessages");
-        pendingDiv.innerHTML = ""; // Clear current messages
-
-        if (!messages) {
-          pendingDiv.innerHTML = "<p>No messages found.</p>";
-          return;
+    // FirebaseUI configuration.
+    var uiConfig = {
+      signInSuccessUrl: "adminPanel.html", // Redirect here after sign in.
+      signInOptions: [
+        {
+          provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+          recaptchaParameters: {
+            // Use an invisible reCAPTCHA.
+            type: 'image',
+            size: 'invisible'
+          },
+          defaultCountry: 'US', // Optional.
+          loginHint: '+1'       // Optional. Prefills the phone number input.
         }
-
-        let found = false;
-        for (var key in messages) {
-          if (messages.hasOwnProperty(key)) {
-            var message = messages[key];
-            // Only display messages that have not been approved
-            if (!message.approved) {
-              found = true;
-              var messageDiv = document.createElement("div");
-              messageDiv.innerHTML = '<span>' + message.text + '</span>';
-
-              // Approve button
-              var approveBtn = document.createElement("button");
-              approveBtn.textContent = "Approve";
-              approveBtn.onclick = (function(messageKey) {
-                return function() {
-                  firebase.database().ref("messages/" + messageKey).update({ approved: true })
-                    .then(() => console.log("Message approved:", messageKey))
-                    .catch((error) => console.error("Error approving message:", error));
-                };
-              })(key);
-
-              // Deny button
-              var denyBtn = document.createElement("button");
-              denyBtn.textContent = "Deny";
-              denyBtn.onclick = (function(messageKey) {
-                return function() {
-                  firebase.database().ref("messages/" + messageKey).remove()
-                    .then(() => console.log("Message denied and removed:", messageKey))
-                    .catch((error) => console.error("Error deleting message:", error));
-                };
-              })(key);
-
-              messageDiv.appendChild(approveBtn);
-              messageDiv.appendChild(denyBtn);
-              pendingDiv.appendChild(messageDiv);
-            }
-          }
+      ],
+      // You can remove other providers if you only need phone authentication.
+      autoUpgradeAnonymousUsers: false,
+      callbacks: {
+        // Called when a user has been successfully signed in.
+        signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+          console.log("Admin signed in:", authResult.user);
+          // Return true to automatically redirect.
+          return true;
         }
-        if (!found) {
-          pendingDiv.innerHTML = "<p>No pending messages.</p>";
-        }
-      });
-    }
-
-    // Listen for auth state changes
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        console.log("Admin is signed in:", user);
-        loadPendingMessages();
-      } else {
-        // If not signed in, redirect back to the login page
-        window.location.href = "admin.html";
       }
-    });
+    };
+
+    // Initialize the FirebaseUI Widget using Firebase.
+    var ui = new firebaseui.auth.AuthUI(firebase.auth());
+    ui.start('#firebaseui-auth-container', uiConfig);
   </script>
 </body>
 </html>
