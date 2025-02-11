@@ -29,9 +29,9 @@
   
   <!-- Timer Container (hidden by default) -->
   <div id="timer-container" class="feature-container" style="display: none;">
-    <div id="timerDisplay" class="digital-display">00:00:00</div>
+    <!-- Editable input field so user can set the timer time directly -->
+    <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" />
     <div id="timer-controls">
-      <input type="number" id="timerInput" placeholder="Seconds">
       <button id="startTimer">Start Timer</button>
     </div>
   </div>
