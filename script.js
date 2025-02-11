@@ -57,6 +57,18 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
   
+  // Helper function to parse a "HH:MM:SS" string into total seconds
+  function parseTime(timeStr) {
+    const parts = timeStr.split(':');
+    if (parts.length !== 3) {
+      return NaN;
+    }
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    const seconds = parseInt(parts[2], 10);
+    return hours * 3600 + minutes * 60 + seconds;
+  }
+  
   // LIVE CLOCK: Update every second using user's local time and configurable format
   function updateClock() {
     const now = new Date();
@@ -85,19 +97,25 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(updateClock, 1000);
   document.getElementById('timeFormat').addEventListener('change', updateClock);
   
-  // TIMER: Countdown based on user input, displayed in HH:MM:SS format
+  // TIMER: Countdown based on user-edited value in the input field (HH:MM:SS format)
   let timerInterval;
   document.getElementById('startTimer').addEventListener('click', () => {
-    const timerInputValue = document.getElementById('timerInput').value;
-    let totalSeconds = parseInt(timerInputValue, 10);
-    const timerDisplay = document.getElementById('timerDisplay');
+    const timeInputStr = document.getElementById('timerDisplay').value;
+    let totalSeconds = parseTime(timeInputStr);
+    
+    if (isNaN(totalSeconds)) {
+      alert("Please enter a valid time in HH:MM:SS format.");
+      return;
+    }
+    
+    const timerDisplayElem = document.getElementById('timerDisplay');
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
       if (totalSeconds > 0) {
-        timerDisplay.textContent = formatTime(totalSeconds);
+        timerDisplayElem.value = formatTime(totalSeconds);
         totalSeconds--;
       } else {
-        timerDisplay.textContent = "Time is up!";
+        timerDisplayElem.value = "Time is up!";
         clearInterval(timerInterval);
       }
     }, 1000);
