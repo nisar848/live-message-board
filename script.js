@@ -21,58 +21,65 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-let timerInterval; // Variable to store the timer interval
+document.addEventListener('DOMContentLoaded', () => {
+  // LIVE CLOCK: Update every second using user's local time
+  function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const currentTime = `${hours}:${minutes}:${seconds}`;
+    document.getElementById('clock').textContent = currentTime;
+  }
+  
+  // Call immediately and then every second
+  updateClock();
+  setInterval(updateClock, 1000);
 
-// Attach an event listener to the "Start Timer" button
-document.getElementById('startTimer').addEventListener('click', function () {
-  // Get the input value and convert it to an integer
-  const timerInputValue = document.getElementById('timerInput').value;
-  let timeLeft = parseInt(timerInputValue, 10);
+  // TIMER: Countdown based on user input
+  let timerInterval; // Holds the timer interval
+  document.getElementById('startTimer').addEventListener('click', () => {
+    const timerInputValue = document.getElementById('timerInput').value;
+    let timeLeft = parseInt(timerInputValue, 10);
+    const timerDisplay = document.getElementById('timerDisplay');
 
-  // Get the element that displays the timer countdown
-  const timerDisplay = document.getElementById('timerDisplay');
+    // Clear any existing timer to avoid duplicates
+    clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+      if (timeLeft > 0) {
+        timerDisplay.textContent = timeLeft;
+        timeLeft--;
+      } else {
+        timerDisplay.textContent = 'Time is up!';
+        clearInterval(timerInterval);
+      }
+    }, 1000);
+  });
 
-  // Clear any previous timer to avoid multiple intervals running at once
-  clearInterval(timerInterval);
+  // STOPWATCH: Count up from zero
+  let stopwatchInterval; // Holds the stopwatch interval
+  let stopwatchTime = 0;   // Elapsed seconds
+  const stopwatchDisplay = document.getElementById('stopwatchDisplay');
 
-  // Start a new interval to count down every second (1000ms)
-  timerInterval = setInterval(() => {
-    if (timeLeft > 0) {
-      timerDisplay.textContent = timeLeft;
-      timeLeft--;
-    } else {
-      timerDisplay.textContent = 'Time is up!';
-      clearInterval(timerInterval);
-    }
-  }, 1000);
-});
+  // Start the stopwatch
+  document.getElementById('startStopwatch').addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = setInterval(() => {
+      stopwatchTime++;
+      stopwatchDisplay.textContent = stopwatchTime;
+    }, 1000);
+  });
 
+  // Stop the stopwatch
+  document.getElementById('stopStopwatch').addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+  });
 
-// STOPWATCH CODE
-let stopwatchInterval; // Variable to store the stopwatch interval
-let stopwatchTime = 0;   // Variable to keep track of elapsed seconds
-
-// Get the display element for the stopwatch
-const stopwatchDisplay = document.getElementById('stopwatchDisplay');
-
-// Attach event listener to the "Start" button for the stopwatch
-document.getElementById('startStopwatch').addEventListener('click', function () {
-  // Clear any existing interval to prevent multiple intervals running simultaneously
-  clearInterval(stopwatchInterval);
-  stopwatchInterval = setInterval(() => {
-    stopwatchTime++;
+  // Reset the stopwatch
+  document.getElementById('resetStopwatch').addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+    stopwatchTime = 0;
     stopwatchDisplay.textContent = stopwatchTime;
-  }, 1000);
-});
-
-// Attach event listener to the "Stop" button
-document.getElementById('stopStopwatch').addEventListener('click', function () {
-  clearInterval(stopwatchInterval);
-});
-
-// Attach event listener to the "Reset" button
-document.getElementById('resetStopwatch').addEventListener('click', function () {
-  clearInterval(stopwatchInterval);
-  stopwatchTime = 0;
-  stopwatchDisplay.textContent = stopwatchTime;
+  });
 });
