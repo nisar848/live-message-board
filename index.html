@@ -58,8 +58,9 @@
   <div id="message-board">
     <h2>Live Message Board</h2>
     <div id="messages"></div>
-    <!-- Instead of a message input form, show a QR code scanner -->
-    <div id="qr-reader" style="width: 300px;"></div>
+    <!-- QR Code display for message submission -->
+    <div id="qr-code"></div>
+    <p>Scan this QR code with your mobile device to submit your gem or reflection.</p>
   </div>
   
   <!-- Footer -->
@@ -67,8 +68,8 @@
     <p>&copy; Zain Nisar 2025</p>
   </footer>
   
-  <!-- Include the html5-qrcode library from a CDN -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Include QRCode.js library for generating QR codes -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- Link to the JavaScript file as a module -->
   <script type="module" src="script.js"></script>
 </body>
