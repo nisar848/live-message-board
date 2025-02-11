@@ -22,19 +22,45 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 
 document.addEventListener('DOMContentLoaded', () => {
-  // LIVE CLOCK: Update every second using user's local time
+  // LIVE CLOCK: Update every second using user's local time and configurable format
   function updateClock() {
     const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const currentTime = `${hours}:${minutes}:${seconds}`;
-    document.getElementById('clock').textContent = currentTime;
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    
+    // Read the selected time format from the dropdown
+    const timeFormat = document.getElementById('timeFormat').value;
+    
+    let period = '';
+    
+    // If the user selects 12-Hour format, convert the hours and determine AM/PM
+    if (timeFormat === '12') {
+      period = hours >= 12 ? ' PM' : ' AM';
+      hours = hours % 12; // Convert 24-hour time to 12-hour format
+      if (hours === 0) { // If hours is 0, it should be 12 for 12-hour format
+        hours = 12;
+      }
+    }
+    
+    // Format each unit to always have two digits
+    const hoursString = String(hours).padStart(2, '0');
+    const minutesString = String(minutes).padStart(2, '0');
+    const secondsString = String(seconds).padStart(2, '0');
+    
+    // Combine into the final time string
+    const timeString = `${hoursString}:${minutesString}:${secondsString}${period}`;
+    
+    // Update the clock element with the formatted time
+    document.getElementById('clock').textContent = timeString;
   }
-  
-  // Call immediately and then every second
+
+  // Update the clock immediately and then every second
   updateClock();
   setInterval(updateClock, 1000);
+
+  // Update the clock immediately when the dropdown value changes
+  document.getElementById('timeFormat').addEventListener('change', updateClock);
 
   // TIMER: Countdown based on user input
   let timerInterval; // Holds the timer interval
