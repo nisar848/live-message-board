@@ -22,7 +22,7 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 
 document.addEventListener('DOMContentLoaded', () => {
-  // FEATURE BUTTONS: Show/hide sections
+  // FEATURE BUTTONS: Show/hide containers
   const btnClock = document.getElementById('btnClock');
   const btnTimer = document.getElementById('btnTimer');
   const btnStopwatch = document.getElementById('btnStopwatch');
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stopwatchDisplay.textContent = stopwatchTime;
   });
   
-  // FULLSCREEN TOGGLE: Allows users to switch to and from fullscreen mode
+  // FULLSCREEN TOGGLE: Switch to/from fullscreen mode
   document.getElementById('fullscreenToggle').addEventListener('click', () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().then(() => {
