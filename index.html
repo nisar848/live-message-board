@@ -46,7 +46,7 @@
       </div>
     </div>
     
-    <!-- Feature Buttons (positioned absolutely at the bottom of the main display) -->
+    <!-- Feature Buttons (positioned absolutely at the bottom-center of main-display) -->
     <div id="feature-buttons">
       <button id="btnClock">Clock</button>
       <button id="btnTimer">Timer</button>
@@ -54,14 +54,12 @@
     </div>
   </div>
   
-  <!-- Live Message Board (remains below the main display) -->
+  <!-- Live Message Board -->
   <div id="message-board">
     <h2>Live Message Board</h2>
     <div id="messages"></div>
-    <form id="messageForm">
-      <input type="text" id="messageInput" placeholder="Enter your message">
-      <button type="submit">Submit</button>
-    </form>
+    <!-- Instead of a message input form, show a QR code scanner -->
+    <div id="qr-reader" style="width: 300px;"></div>
   </div>
   
   <!-- Footer -->
@@ -69,6 +67,8 @@
     <p>&copy; Zain Nisar 2025</p>
   </footer>
   
+  <!-- Include the html5-qrcode library from a CDN -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <!-- Link to the JavaScript file as a module -->
   <script type="module" src="script.js"></script>
 </body>
