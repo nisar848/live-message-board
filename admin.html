@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Responsive design meta tag -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Live Gem Board</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Admin Login Section -->
+  <div id="admin-login">
+    <h1>Admin Login</h1>
+    <!-- In this example, using phone authentication or another method -->
+    <form id="adminLoginForm">
+      <input type="text" id="adminPhone" placeholder="Enter your phone number" required>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- Admin Panel (hidden until login is successful) -->
+  <div id="adminPanel" style="display: none;">
+    <h2>Pending Messages</h2>
+    <div id="pendingMessages">
+      <!-- Messages pending approval will be dynamically loaded here -->
+    </div>
+  </div>
+
+  <!-- Include Firebase and Admin-specific JavaScript -->
+  <script src="admin.js" type="module"></script>
+</body>
+</html>
