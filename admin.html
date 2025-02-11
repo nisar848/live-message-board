@@ -6,12 +6,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - Live Gem Board</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Simple inline styles for admin panel demo */
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #admin-login, #adminPanel {
+      background: rgba(255,255,255,0.2);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 90%;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      border-radius: 5px;
+      border: none;
+      font-size: 1em;
+    }
+    button {
+      background: rgba(255,255,255,0.6);
+      cursor: pointer;
+    }
+    button:hover {
+      background: rgba(255,255,255,0.8);
+    }
+    #pendingMessages div {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #pendingMessages button {
+      width: auto;
+      padding: 5px 10px;
+      margin-left: 5px;
+      font-size: 0.9em;
+    }
+  </style>
 </head>
 <body>
   <!-- Admin Login Section -->
   <div id="admin-login">
     <h1>Admin Login</h1>
-    <!-- In this example, using phone authentication or another method -->
+    <!-- In this example, using phone authentication -->
     <form id="adminLoginForm">
       <input type="text" id="adminPhone" placeholder="Enter your phone number" required>
       <button type="submit">Login</button>
@@ -22,11 +74,11 @@
   <div id="adminPanel" style="display: none;">
     <h2>Pending Messages</h2>
     <div id="pendingMessages">
-      <!-- Messages pending approval will be dynamically loaded here -->
+      <!-- Pending messages will be dynamically loaded here -->
     </div>
   </div>
 
-  <!-- Include Firebase and Admin-specific JavaScript -->
+  <!-- Include the admin JavaScript as a module -->
   <script src="admin.js" type="module"></script>
 </body>
 </html>
