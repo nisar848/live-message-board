@@ -1,41 +1,57 @@
-/* Ensure the page uses the full screen height and width */
+/* Set a gradient background for a modern feel */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   font-family: Arial, sans-serif;
-  background: #f0f0f0;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
 }
 
-/* Common styling for feature containers (Clock, Timer, Stopwatch) */
+/* Main display container centers its content vertically & horizontally */
+#main-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;  /* Adjust as needed so the feature cards stay centered */
+}
+
+/* Glassmorphism styling for feature containers */
 .feature-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 80%;
+  max-width: 400px;
   margin: 20px auto;
-  background: #fff;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.2);  /* Translucent background */
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-/* Styling for the digital display (clock, timer, stopwatch) */
+/* Digital display styling (for clock, timer, stopwatch) */
 .digital-display {
-  font-size: 4em;
+  font-size: 3em;
   margin-bottom: 10px;
-  text-align: center; /* Center the text inside the display */
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Clock options styling */
 #clock-options {
   margin-top: 10px;
   text-align: center;
+  color: #fff;
 }
 
-/* Feature Buttons - Centered Under the Clock */
+/* Feature Buttons styling */
 #feature-buttons {
   text-align: center;
   margin: 20px 0;
@@ -45,9 +61,18 @@ html, body {
   padding: 10px 20px;
   font-size: 1em;
   cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: background 0.3s ease;
+}
+#feature-buttons button:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
-/* Fullscreen Toggle Button Positioning */
+/* Fullscreen toggle button positioning */
 #fullscreen-container {
   position: fixed;
   top: 10px;
@@ -59,19 +84,20 @@ html, body {
   border: none;
   font-size: 1.8em;
   cursor: pointer;
+  color: #fff;
 }
 
-/* Live Message Board Styling */
+/* Live Message Board styling */
 #message-board {
   width: 90%;
   margin: 20px auto;
-  background: #fff;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.8);
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Responsive design for small devices */
+/* Responsive design adjustments */
 @media (max-width: 600px) {
   .digital-display {
     font-size: 2.5em;
