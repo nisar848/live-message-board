@@ -27,15 +27,16 @@ body {
 
 /* Message board occupies the remaining 50% */
 #message-board {
-  flex: 1;
-  width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  background: rgba(255,255,255,0.8);
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
+  width: 90%;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2); /* More transparent */
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   text-align: center;
-  overflow: auto;
+  color: #fff;  /* Adjust text color for better contrast on a dark background */
 }
 
 /* Glassmorphism styling for feature containers (Clock, Timer, Stopwatch) */
