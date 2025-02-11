@@ -1,9 +1,11 @@
-// Import Firebase modules from the CDN
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
 
-// Your Firebase configuration (replace with your actual configuration)
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
+
+// Firebase configuration (replace with your actual configuration)
 const firebaseConfig = {
   apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
   authDomain: "live-message-board.firebaseapp.com",
@@ -14,113 +16,162 @@ const firebaseConfig = {
   measurementId: "G-4KCL1DYY8R"
 };
 
-// Initialize Firebase
+// Initialize Firebase and services
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-// Ensure there's a reCAPTCHA container. If not, create one.
-if (!document.getElementById('recaptcha-container')) {
-  const recaptchaDiv = document.createElement('div');
-  recaptchaDiv.id = 'recaptcha-container';
-  document.body.appendChild(recaptchaDiv);
-}
-
-// Set up an invisible reCAPTCHA verifier.
-const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-  size: 'invisible',
-  callback: (response) => {
-    console.log('reCAPTCHA solved');
+document.addEventListener('DOMContentLoaded', () => {
+  // FEATURE BUTTONS: Show/hide containers using "flex" to preserve centering
+  const btnClock = document.getElementById('btnClock');
+  const btnTimer = document.getElementById('btnTimer');
+  const btnStopwatch = document.getElementById('btnStopwatch');
+  
+  const clockContainer = document.getElementById('clock-container');
+  const timerContainer = document.getElementById('timer-container');
+  const stopwatchContainer = document.getElementById('stopwatch-container');
+  
+  btnClock.addEventListener('click', () => {
+    clockContainer.style.display = "flex";
+    timerContainer.style.display = "none";
+    stopwatchContainer.style.display = "none";
+  });
+  
+  btnTimer.addEventListener('click', () => {
+    clockContainer.style.display = "none";
+    timerContainer.style.display = "flex";
+    stopwatchContainer.style.display = "none";
+  });
+  
+  btnStopwatch.addEventListener('click', () => {
+    clockContainer.style.display = "none";
+    timerContainer.style.display = "none";
+    stopwatchContainer.style.display = "flex";
+  });
+  
+  // Helper function to format seconds as HH:MM:SS
+  function formatTime(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
-}, auth);
-
-// Optional: Force render to check widget ID.
-recaptchaVerifier.render().then((widgetId) => {
-  console.log("reCAPTCHA rendered with widgetId:", widgetId);
-});
-
-// ADMIN LOGIN USING PHONE AUTHENTICATION
-const adminLoginForm = document.getElementById('adminLoginForm');
-adminLoginForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const phoneNumber = document.getElementById('adminPhone').value.trim();
   
-  // Validate phone number using a simple regex for E.164 format.
-  const phoneRegex = /^\+\d{10,15}$/;
-  if (!phoneRegex.test(phoneNumber)) {
-    alert("Please enter a valid phone number in E.164 format (e.g., +15551234567).");
-    return;
+  // Helper function to parse a "HH:MM:SS" string into total seconds
+  function parseTime(timeStr) {
+    const parts = timeStr.split(':');
+    if (parts.length !== 3) {
+      return NaN;
+    }
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    const seconds = parseInt(parts[2], 10);
+    return hours * 3600 + minutes * 60 + seconds;
   }
   
-  // Inform the admin that the SMS code is being sent.
-  alert("Phone number is valid. Sending SMS verification code...");
-  
-  // Attempt to sign in using phone number.
-  signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier)
-    .then((confirmationResult) => {
-      // SMS sent. Prompt admin to enter the verification code.
-      const verificationCode = window.prompt('Enter the verification code you received via SMS:');
-      return confirmationResult.confirm(verificationCode);
-    })
-    .then((result) => {
-      // Admin signed in successfully.
-      console.log('Admin signed in:', result.user);
-      document.getElementById('admin-login').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-      loadPendingMessages();
-    })
-    .catch((error) => {
-      console.error('Error during phone authentication:', error);
-      alert('Authentication failed: ' + error.message);
-    });
-});
-
-// FUNCTION TO LOAD PENDING MESSAGES
-function loadPendingMessages() {
-  // Listen for changes under the "messages" node.
-  const messagesRef = ref(database, 'messages');
-  onValue(messagesRef, (snapshot) => {
-    const messages = snapshot.val();
-    const pendingMessagesDiv = document.getElementById('pendingMessages');
-    // Clear existing content.
-    pendingMessagesDiv.innerHTML = '';
-    // Loop through each message.
-    for (let key in messages) {
-      if (messages.hasOwnProperty(key)) {
-        const message = messages[key];
-        // Check if the message is pending approval (if approved is not true).
-        if (!message.approved) {
-          // Create a container for this message.
-          const messageDiv = document.createElement('div');
-          // Optionally include the message text and other details.
-          messageDiv.innerHTML = `<span>${message.text}</span>`;
-          
-          // Create an Approve button.
-          const approveButton = document.createElement('button');
-          approveButton.textContent = 'Approve';
-          approveButton.addEventListener('click', () => {
-            update(ref(database, 'messages/' + key), { approved: true })
-              .then(() => console.log('Message approved:', key))
-              .catch((error) => console.error('Error approving message:', error));
-          });
-          
-          // Create a Deny button.
-          const denyButton = document.createElement('button');
-          denyButton.textContent = 'Deny';
-          denyButton.addEventListener('click', () => {
-            remove(ref(database, 'messages/' + key))
-              .then(() => console.log('Message denied and removed:', key))
-              .catch((error) => console.error('Error deleting message:', error));
-          });
-          
-          // Append buttons to the message container.
-          messageDiv.appendChild(approveButton);
-          messageDiv.appendChild(denyButton);
-          
-          // Append this message container to pending messages.
-          pendingMessagesDiv.appendChild(messageDiv);
-        }
+  // LIVE CLOCK: Update every second using user's local time and configurable format
+  function updateClock() {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    
+    // Read the selected time format from the dropdown
+    const timeFormat = document.getElementById('timeFormat').value;
+    let period = '';
+    if (timeFormat === '12') {
+      period = hours >= 12 ? ' PM' : ' AM';
+      hours = hours % 12;
+      if (hours === 0) {
+        hours = 12;
       }
     }
+    const hoursString = String(hours).padStart(2, '0');
+    const minutesString = String(minutes).padStart(2, '0');
+    const secondsString = String(seconds).padStart(2, '0');
+    const timeString = `${hoursString}:${minutesString}:${secondsString}${period}`;
+    document.getElementById('clock').textContent = timeString;
+  }
+  
+  updateClock();
+  setInterval(updateClock, 1000);
+  document.getElementById('timeFormat').addEventListener('change', updateClock);
+  
+  // TIMER: Countdown based on user-edited value in the input field (HH:MM:SS format)
+  let timerInterval;
+  document.getElementById('startTimer').addEventListener('click', () => {
+    const timeInputStr = document.getElementById('timerDisplay').value;
+    let totalSeconds = parseTime(timeInputStr);
+    
+    if (isNaN(totalSeconds)) {
+      alert("Please enter a valid time in HH:MM:SS format.");
+      return;
+    }
+    
+    const timerDisplayElem = document.getElementById('timerDisplay');
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (totalSeconds > 0) {
+        timerDisplayElem.value = formatTime(totalSeconds);
+        totalSeconds--;
+      } else {
+        timerDisplayElem.value = "Time is up!";
+        clearInterval(timerInterval);
+      }
+    }, 1000);
   });
-}
+  
+  // STOPWATCH: Count up from zero and display in HH:MM:SS format
+  let stopwatchInterval;
+  let stopwatchSeconds = 0;
+  const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+  
+  document.getElementById('startStopwatch').addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = setInterval(() => {
+      stopwatchSeconds++;
+      stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
+    }, 1000);
+  });
+  
+  document.getElementById('stopStopwatch').addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+  });
+  
+  document.getElementById('resetStopwatch').addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+    stopwatchSeconds = 0;
+    stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
+  });
+  
+  // FULLSCREEN TOGGLE: Switch to/from fullscreen mode
+  document.getElementById('fullscreenToggle').addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        document.getElementById('fullscreenToggle').textContent = "✕";
+      }).catch(err => {
+        console.error(`Error enabling fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        document.getElementById('fullscreenToggle').textContent = "⛶";
+      }).catch(err => {
+        console.error(`Error exiting fullscreen: ${err.message}`);
+      });
+    }
+  });
+  
+  // QR Code Generation for Message Submission
+  // Hardcode the URL for your submit page:
+  const qrCodeContainer = document.getElementById('qr-code');
+  const submissionUrl = "https://nisar848.github.io/live-message-board/submit.html"; 
+  new QRCode(qrCodeContainer, {
+      text: submissionUrl,
+      width: 150,
+      height: 150,
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+  });
+});
