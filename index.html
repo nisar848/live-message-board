@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Clock Container -->
+  <!-- Clock Container (default view) -->
   <div id="clock-container" class="feature-container">
-    <div id="clock">00:00:00</div>
+    <div id="clock" class="digital-display">00:00:00</div>
     <div id="clock-options">
       <label for="timeFormat">Select Time Format:</label>
       <select id="timeFormat">
@@ -29,19 +29,21 @@
   
   <!-- Timer Container (hidden by default) -->
   <div id="timer-container" class="feature-container" style="display: none;">
-    <h2>Timer</h2>
-    <input type="number" id="timerInput" placeholder="Seconds">
-    <button id="startTimer">Start Timer</button>
-    <div id="timerDisplay">0</div>
+    <div id="timerDisplay" class="digital-display">00:00:00</div>
+    <div id="timer-controls">
+      <input type="number" id="timerInput" placeholder="Seconds">
+      <button id="startTimer">Start Timer</button>
+    </div>
   </div>
   
   <!-- Stopwatch Container (hidden by default) -->
   <div id="stopwatch-container" class="feature-container" style="display: none;">
-    <h2>Stopwatch</h2>
-    <button id="startStopwatch">Start</button>
-    <button id="stopStopwatch">Stop</button>
-    <button id="resetStopwatch">Reset</button>
-    <div id="stopwatchDisplay">0</div>
+    <div id="stopwatchDisplay" class="digital-display">00:00:00</div>
+    <div id="stopwatch-controls">
+      <button id="startStopwatch">Start</button>
+      <button id="stopStopwatch">Stop</button>
+      <button id="resetStopwatch">Reset</button>
+    </div>
   </div>
   
   <!-- Fullscreen Toggle Button (fixed at top right) -->
