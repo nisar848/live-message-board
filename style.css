@@ -31,12 +31,12 @@ body {
   margin: 20px auto;
   padding: 20px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2); /* More transparent */
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: none;           /* No background */
+  box-shadow: none;           /* No shadow */
+  backdrop-filter: none;      /* No blur effect */
+  -webkit-backdrop-filter: none;
   text-align: center;
-  color: #fff;  /* Adjust text color for better contrast on a dark background */
+  color: #fff;                /* White text for contrast */
 }
 
 /* Glassmorphism styling for feature containers (Clock, Timer, Stopwatch) */
