@@ -54,14 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update the clock element with the formatted time
     document.getElementById('clock').textContent = timeString;
   }
-
+  
   // Update the clock immediately and then every second
   updateClock();
   setInterval(updateClock, 1000);
-
+  
   // Update the clock immediately when the dropdown value changes
   document.getElementById('timeFormat').addEventListener('change', updateClock);
-
+  
   // TIMER: Countdown based on user input
   let timerInterval; // Holds the timer interval
   document.getElementById('startTimer').addEventListener('click', () => {
@@ -82,12 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 1000);
   });
-
+  
   // STOPWATCH: Count up from zero
   let stopwatchInterval; // Holds the stopwatch interval
   let stopwatchTime = 0;   // Elapsed seconds
   const stopwatchDisplay = document.getElementById('stopwatchDisplay');
-
+  
   // Start the stopwatch
   document.getElementById('startStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
@@ -96,37 +96,38 @@ document.addEventListener('DOMContentLoaded', () => {
       stopwatchDisplay.textContent = stopwatchTime;
     }, 1000);
   });
-
+  
   // Stop the stopwatch
   document.getElementById('stopStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
   });
-
+  
   // Reset the stopwatch
   document.getElementById('resetStopwatch').addEventListener('click', () => {
     clearInterval(stopwatchInterval);
     stopwatchTime = 0;
     stopwatchDisplay.textContent = stopwatchTime;
   });
-// Fullscreen Toggle: Allows users to switch to and from fullscreen mode
-document.getElementById('fullscreenToggle').addEventListener('click', () => {
-  // Check if the document is already in fullscreen mode
-  if (!document.fullscreenElement) {
-    // Request fullscreen on the entire page
-    document.documentElement.requestFullscreen().then(() => {
-      // Update the button text to indicate the new action
-      document.getElementById('fullscreenToggle').textContent = "Exit Fullscreen";
-    }).catch(err => {
-      console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-    });
-  } else {
-    // If already fullscreen, exit fullscreen mode
-    document.exitFullscreen().then(() => {
-      // Reset the button text
-      document.getElementById('fullscreenToggle').textContent = "Go Fullscreen";
-    }).catch(err => {
-      console.error(`Error attempting to exit full-screen mode: ${err.message}`);
-    });
-  }
-});
+  
+  // FULLSCREEN TOGGLE: Allows users to switch to and from fullscreen mode
+  document.getElementById('fullscreenToggle').addEventListener('click', () => {
+    // Check if the document is already in fullscreen mode
+    if (!document.fullscreenElement) {
+      // Request fullscreen on the entire page
+      document.documentElement.requestFullscreen().then(() => {
+        // Update the button text to indicate the new action
+        document.getElementById('fullscreenToggle').textContent = "Exit Fullscreen";
+      }).catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      // If already fullscreen, exit fullscreen mode
+      document.exitFullscreen().then(() => {
+        // Reset the button text
+        document.getElementById('fullscreenToggle').textContent = "Go Fullscreen";
+      }).catch(err => {
+        console.error(`Error attempting to exit full-screen mode: ${err.message}`);
+      });
+    }
+  });
 });
