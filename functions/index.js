@@ -26,7 +26,7 @@ const adminsRef = admin.database().ref("admins");
 /**
  * When a new user signs up, make them admin if no admin exists.
  */
-exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
+exports.setFirstAdmin = functions.auth.user.onCreate(async (user) => {
   if (!user || !user.uid) {
     console.error("Invalid user object received in onCreate trigger:", user);
     return null;
@@ -60,8 +60,10 @@ exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
  */
 exports.addAdmin = functions.https.onCall(async (data, context) => {
   if (!context.auth || !context.auth.token.admin) {
-    throw new functions.https.HttpsError("permission-denied",
-        "Only admins can add new admins.");
+    throw new functions.https.HttpsError(
+        "permission-denied",
+        "Only admins can add new admins.",
+    );
   }
 
   const {userId} = data;
