@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const path = require("path");
 const fs = require("fs");
@@ -39,8 +39,9 @@ exports.setFirstAdmin = functions.auth.user.onCreate(async (user) => {
     if (!firstAdminSet) {
       // No admin is set yet, make this user admin
       await admin.auth().setCustomUserClaims(user.uid, {admin: true});
-      await adminsRef.child(user.uid).set({email: user.email ||
-        user.phoneNumber});
+      await adminsRef.child(user.uid).set({
+        email: user.email || user.phoneNumber,
+      });
 
       // Mark that an admin has been set
       await adminFlagRef.set(true);
@@ -68,8 +69,10 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
 
   const {userId} = data;
   if (!userId) {
-    throw new functions.https.HttpsError("invalid-argument",
-        "User ID is required.");
+    throw new functions.https.HttpsError(
+        "invalid-argument",
+        "User ID is required.",
+    );
   }
 
   try {
@@ -79,35 +82,38 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
     return {success: true, message: "User granted admin privileges."};
   } catch (error) {
     console.error("Error adding admin:", error);
-    throw new functions.https.HttpsError("internal",
-        "Could not grant admin privileges.");
+    throw new functions.https.HttpsError(
+        "internal",
+        "Could not grant admin privileges.",
+    );
   }
 });
 
 /**
  * Scheduled function to delete all users and reset environment every 3 days.
  */
-exports.resetEnvironment =
-functions.pubsub.schedule("every 3 days").onRun(async () => {
-  try {
-    // Fetch all users
-    const listUsersResult = await admin.auth().listUsers();
-    const deletePromises = [];
+exports.resetEnvironment = functions.pubsub
+    .schedule("every 3 days")
+    .onRun(async () => {
+      try {
+      // Fetch all users
+        const listUsersResult = await admin.auth().listUsers();
+        const deletePromises = [];
 
-    for (const user of listUsersResult.users) {
-      // Remove user
-      deletePromises.push(admin.auth().deleteUser(user.uid));
-      console.log("Deleted user:", user.uid);
-    }
+        for (const user of listUsersResult.users) {
+        // Remove user
+          deletePromises.push(admin.auth().deleteUser(user.uid));
+          console.log("Deleted user:", user.uid);
+        }
 
-    // Clear the admin list in the database
-    await Promise.all(deletePromises);
-    await adminsRef.remove();
-    await adminFlagRef.set(false);
+        // Clear the admin list in the database
+        await Promise.all(deletePromises);
+        await adminsRef.remove();
+        await adminFlagRef.set(false);
 
-    console.log("All users deleted. Environment reset.");
-  } catch (error) {
-    console.error("Error resetting environment:", error);
-  }
-  return null;
-});
+        console.log("All users deleted. Environment reset.");
+      } catch (error) {
+        console.error("Error resetting environment:", error);
+      }
+      return null;
+    });
