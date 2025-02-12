@@ -1,101 +1,66 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-
-// Load the service account key securely
 const serviceAccount =
-require("./live-message-board-firebase-adminsdk-fbsvc-c426b9cb18.json");
+require("functions/live-message-board-firebase-adminsdk-fbsvc-c426b9cb18.json");
+// 🔹 Path to service account key
 
-// Initialize Firebase Admin SDK with credentials
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://live-message-board-default-rtdb.firebaseio.com",
+  databaseURL: "https://live-message-board.firebaseio.com", // 🔹 Replace with your actual database URL
 });
 
-// Define a reference to store the
-// flag indicating if the first admin has been set
+// Reference to track whether an admin has been set
 const adminFlagRef = admin.database().ref("admin/firstAdminSet");
+const adminsRef = admin.database().ref("admins");
 
 /**
- * Triggered when a new user is created.
- * If the user signed in via Email/Password and no admin has been set yet,
- * assign the custom claim "admin": true to that user and set the flag.
+ * When a new user signs up, make them admin if no admin exists.
  */
-exports.setFirstAdmin = functions.auth.user().onCreate(async (userRecord) => {
+exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
   try {
-    // Ensure userRecord exists
-    if (!userRecord || !userRecord.providerData) {
-      console.error("Invalid user record received.");
-      return null;
-    }
-
-    // Check if the user signed in with email/password.
-    const isEmailUser = userRecord.providerData.some((p) =>
-      p.providerId === "password");
-    if (!isEmailUser) {
-      console.log(`User ${userRecord.uid} did not sign in with email; 
-        skipping admin assignment.`);
-      return null;
-    }
-
-    // Check if an admin is already set
     const snapshot = await adminFlagRef.once("value");
     const firstAdminSet = snapshot.val();
 
     if (!firstAdminSet) {
-      // No admin is set yet, make this user the first admin
-      await admin.auth().setCustomUserClaims(userRecord.uid, {admin: true});
+      // No admin is set yet, make this user admin
+      await admin.auth().setCustomUserClaims(user.uid, {admin: true});
+      await adminsRef.child(user.uid).set({email:
+        user.email || user.phoneNumber});
+
+      // Mark that an admin has been set
       await adminFlagRef.set(true);
-      console.log(`✅ First admin claim set for user: ${userRecord.uid}`);
+      console.log("First admin assigned:", user.uid);
     } else {
-      console.log(`⚠️ Admin already set; user 
-        ${userRecord.uid} is not automatically an admin.`);
+      console.log("User is not auto-admin:", user.uid);
     }
   } catch (error) {
-    console.error("❌ Error in setFirstAdmin function:", error);
+    console.error("Error setting first admin:", error);
   }
-  return null;
 });
 
 /**
- * Scheduled function to reset admin claims every 3 days.
- * This function clears the custom 'admin' claim for all users and resets the
- * 'firstAdminSet' flag so that the next new email user can become admin.
+ * Scheduled function to delete all users and reset environment every 3 days.
  */
-exports.resetAdminClaims = functions.pubsub
-    .schedule("0 0 */3 * *") // Runs every 3 days at midnight
-    .onRun(async (context) => {
-      try {
-        let nextPageToken = null;
+exports.resetEnvironment = functions.pubsub.schedule
+("every 3 days").onRun(async () => {
+  try {
+    // Fetch all users
+    const listUsersResult = await admin.auth().listUsers();
+    const deletePromises = [];
 
-        do {
-        // Fetch users in batches of 1000
-          const listUsersResult = await admin.auth().listUsers(1000,
-              nextPageToken);
-          const updatePromises = listUsersResult.users.map((userRecord) => {
-            if (userRecord.customClaims && userRecord.customClaims.admin) {
-              return admin.auth().setCustomUserClaims(userRecord.uid, null)
-                  .then(() => {
-                    console.log(`✅ Removed admin claim from user: 
-                      ${userRecord.uid}`);
-                  })
-                  .catch((error) => {
-                    console.error(`❌ Error removing admin claim from user 
-                      ${userRecord.uid}:`, error);
-                  });
-            }
-            return Promise.resolve(); // Ensure every map
-            // iteration returns a Promise
-          });
+    for (const user of listUsersResult.users) {
+      // Remove user
+      deletePromises.push(admin.auth().deleteUser(user.uid));
+      console.log("Deleted user:", user.uid);
+    }
 
-          await Promise.all(updatePromises);
-          nextPageToken = listUsersResult.pageToken;
-        } while (nextPageToken);
+    // Clear the admin list in the database
+    await Promise.all(deletePromises);
+    await adminsRef.remove();
+    await adminFlagRef.set(false);
 
-        // Reset the first admin flag so that the next email user becomes admin
-        await adminFlagRef.set(false);
-        console.log("✅ Admin claims reset and first admin flag cleared.");
-      } catch (error) {
-        console.error("❌ Error in resetAdminClaims function:", error);
-      }
-      return null;
-    });
+    console.log("All users deleted. Environment reset.");
+  } catch (error) {
+    console.error("Error resetting environment:", error);
+  }
+});
