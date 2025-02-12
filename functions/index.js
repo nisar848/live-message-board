@@ -1,11 +1,18 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 
-// Initialize the Admin SDK.
-admin.initializeApp();
+// Load the service account key securely
+const serviceAccount =
+require("./live-message-board-firebase-adminsdk-fbsvc-c426b9cb18.json");
 
-// Define a reference path in the Realtime Database to store the flag indicating
-// that the first admin has been set.
+// Initialize Firebase Admin SDK with credentials
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://live-message-board-default-rtdb.firebaseio.com",
+});
+
+// Define a reference to store the
+// flag indicating if the first admin has been set
 const adminFlagRef = admin.database().ref("admin/firstAdminSet");
 
 /**
@@ -13,43 +20,40 @@ const adminFlagRef = admin.database().ref("admin/firstAdminSet");
  * If the user signed in via Email/Password and no admin has been set yet,
  * assign the custom claim "admin": true to that user and set the flag.
  */
-exports.setFirstAdmin = functions.auth.user().onCreate((userRecord) => {
-  // Check if the user signed in with email/password.
-  if (
-    !userRecord.providerData ||
-    !userRecord.providerData.some((p) => p.providerId === "password")
-  ) {
-    console.log("User did not sign in with email; skipping admin assignment.");
-    return null;
-  }
+exports.setFirstAdmin = functions.auth.user().onCreate(async (userRecord) => {
+  try {
+    // Ensure userRecord exists
+    if (!userRecord || !userRecord.providerData) {
+      console.error("Invalid user record received.");
+      return null;
+    }
 
-  // Read the admin flag from the database.
-  return adminFlagRef.once("value")
-      .then((snapshot) => {
-        const firstAdminSet = snapshot.val();
-        if (!firstAdminSet) {
-        // No admin is set yet. Set this user as admin.
-          return admin.auth()
-              .setCustomUserClaims(userRecord.uid, {admin: true})
-              .then(() => adminFlagRef.set(true))
-              .then(() => {
-                console.log("First admin claim set for user:", userRecord.uid);
-                return null;
-              })
-              .catch((error) => {
-                console.error("Error setting admin claim:", error);
-                return null;
-              });
-        } else {
-          console.log("Admin already set; user", userRecord.uid,
-              "is not automatically admin.");
-          return null;
-        }
-      })
-      .catch((error) => {
-        console.error("Error reading admin flag:", error);
-        return null;
-      });
+    // Check if the user signed in with email/password.
+    const isEmailUser = userRecord.providerData.some((p) =>
+      p.providerId === "password");
+    if (!isEmailUser) {
+      console.log(`User ${userRecord.uid} did not sign in with email; 
+        skipping admin assignment.`);
+      return null;
+    }
+
+    // Check if an admin is already set
+    const snapshot = await adminFlagRef.once("value");
+    const firstAdminSet = snapshot.val();
+
+    if (!firstAdminSet) {
+      // No admin is set yet, make this user the first admin
+      await admin.auth().setCustomUserClaims(userRecord.uid, {admin: true});
+      await adminFlagRef.set(true);
+      console.log(`✅ First admin claim set for user: ${userRecord.uid}`);
+    } else {
+      console.log(`⚠️ Admin already set; user 
+        ${userRecord.uid} is not automatically an admin.`);
+    }
+  } catch (error) {
+    console.error("❌ Error in setFirstAdmin function:", error);
+  }
+  return null;
 });
 
 /**
@@ -58,39 +62,40 @@ exports.setFirstAdmin = functions.auth.user().onCreate((userRecord) => {
  * 'firstAdminSet' flag so that the next new email user can become admin.
  */
 exports.resetAdminClaims = functions.pubsub
-    .schedule("0 0 */3 * *") // Every 3 days at midnight.
+    .schedule("0 0 */3 * *") // Runs every 3 days at midnight
     .onRun(async (context) => {
       try {
-        let nextPageToken;
+        let nextPageToken = null;
+
         do {
-        // List users in batches of 1000.
+        // Fetch users in batches of 1000
           const listUsersResult = await admin.auth().listUsers(1000,
               nextPageToken);
-          const promises = listUsersResult.users.map((userRecord) => {
+          const updatePromises = listUsersResult.users.map((userRecord) => {
             if (userRecord.customClaims && userRecord.customClaims.admin) {
               return admin.auth().setCustomUserClaims(userRecord.uid, null)
                   .then(() => {
-                    console.log(`Removed admin claim from user: 
+                    console.log(`✅ Removed admin claim from user: 
                       ${userRecord.uid}`);
                   })
                   .catch((error) => {
-                    console.error(`Error removing admin claim from user 
+                    console.error(`❌ Error removing admin claim from user 
                       ${userRecord.uid}:`, error);
                   });
-            } else {
-              return Promise.resolve();
             }
+            return Promise.resolve(); // Ensure every map
+            // iteration returns a Promise
           });
-          await Promise.all(promises);
+
+          await Promise.all(updatePromises);
           nextPageToken = listUsersResult.pageToken;
         } while (nextPageToken);
 
-        // Reset the first admin flag so that the next
-        // new email user becomes admin.
+        // Reset the first admin flag so that the next email user becomes admin
         await adminFlagRef.set(false);
-        console.log("Admin claims reset and first admin flag cleared.");
+        console.log("✅ Admin claims reset and first admin flag cleared.");
       } catch (error) {
-        console.error("Error in resetAdminClaims function:", error);
+        console.error("❌ Error in resetAdminClaims function:", error);
       }
       return null;
     });
