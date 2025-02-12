@@ -26,7 +26,7 @@ const adminsRef = admin.database().ref("admins");
 /**
  * When a new user signs up, make them admin if no admin exists.
  */
-exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
+exports.setFirstAdmin = functions.auth.user.onCreate(async (user) => {
   if (!user || !user.uid) {
     console.error("Invalid user object received in onCreate trigger:", user);
     return null;
@@ -69,8 +69,8 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
 
   const {userId} = data;
   if (!userId) {
-    throw new functions.https.HttpsError("invalid-argument",
-        "User ID is required.");
+    throw new
+    functions.https.HttpsError("invalid-argument", "User ID is required.");
   }
 
   try {
@@ -80,8 +80,8 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
     return {success: true, message: "User granted admin privileges."};
   } catch (error) {
     console.error("Error adding admin:", error);
-    throw new functions.https.HttpsError("internal",
-        "Could not grant admin privileges.");
+    throw new
+    functions.https.HttpsError("internal", "Could not grant admin privileges.");
   }
 });
 
