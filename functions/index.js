@@ -1,9 +1,9 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const serviceAccount =
-// eslint-disable-next-line max-len
-require("./live-message-board-firebase-adminsdk-fbsvc-7af0fc2cdf.json");
-// 🔹 Path to service account key
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/",
+});
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
