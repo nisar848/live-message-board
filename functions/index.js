@@ -41,8 +41,8 @@ exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
 /**
  * Scheduled function to delete all users and reset environment every 3 days.
  */
-exports.resetEnvironment = functions.pubsub.schedule
-("every 3 days").onRun(async () => {
+exports.resetEnvironment =
+functions.pubsub.schedule("every 3 days").onRun(async () => {
   try {
     // Fetch all users
     const listUsersResult = await admin.auth().listUsers();
