@@ -2,7 +2,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const serviceAccount =
 // eslint-disable-next-line max-len
-require("./functions/live-message-board-firebase-adminsdk-fbsvc-c426b9cb18.json");
+require("./live-message-board-firebase-adminsdk-fbsvc-c426b9cb18.json");
 // 🔹 Path to service account key
 
 admin.initializeApp({
