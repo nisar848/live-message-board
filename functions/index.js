@@ -5,8 +5,8 @@ const fs = require("fs");
 
 // Load service account key securely from environment variable
 const serviceAccountPath =
-process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(require("os").homedir(),
-    ".firebase-adminsdk.json");
+  process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+  path.join(require("os").homedir(), ".firebase-adminsdk.json");
 
 if (!fs.existsSync(serviceAccountPath)) {
   console.error("Service account key file not found:", serviceAccountPath);
@@ -27,6 +27,11 @@ const adminsRef = admin.database().ref("admins");
  * When a new user signs up, make them admin if no admin exists.
  */
 exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
+  if (!user || !user.uid) {
+    console.error("Invalid user object received in onCreate trigger:", user);
+    return null;
+  }
+
   try {
     const snapshot = await adminFlagRef.once("value");
     const firstAdminSet = snapshot.val();
@@ -34,8 +39,8 @@ exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
     if (!firstAdminSet) {
       // No admin is set yet, make this user admin
       await admin.auth().setCustomUserClaims(user.uid, {admin: true});
-      await adminsRef.child(user.uid).set(
-          {email: user.email || user.phoneNumber});
+      await adminsRef.child(user.uid).set({email: user.email ||
+        user.phoneNumber});
 
       // Mark that an admin has been set
       await adminFlagRef.set(true);
@@ -46,6 +51,8 @@ exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
   } catch (error) {
     console.error("Error setting first admin:", error);
   }
+
+  return null;
 });
 
 /**
@@ -58,6 +65,10 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
   }
 
   const {userId} = data;
+  if (!userId) {
+    throw new functions.https.HttpsError("invalid-argument",
+        "User ID is required.");
+  }
 
   try {
     await admin.auth().setCustomUserClaims(userId, {admin: true});
@@ -66,8 +77,8 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
     return {success: true, message: "User granted admin privileges."};
   } catch (error) {
     console.error("Error adding admin:", error);
-    throw new
-    functions.https.HttpsError("internal", "Could not grant admin privileges.");
+    throw new functions.https.HttpsError("internal",
+        "Could not grant admin privileges.");
   }
 });
 
@@ -96,4 +107,5 @@ functions.pubsub.schedule("every 3 days").onRun(async () => {
   } catch (error) {
     console.error("Error resetting environment:", error);
   }
+  return null;
 });
