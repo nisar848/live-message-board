@@ -7,7 +7,7 @@ require("./live-message-board-firebase-adminsdk-fbsvc-7af0fc2cdf.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://live-message-board.firebaseio.com", // 🔹 Replace with your actual database URL
+  databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/", // 🔹 Replace with your actual database URL
 });
 
 // Reference to track whether an admin has been set
