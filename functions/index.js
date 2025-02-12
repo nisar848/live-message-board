@@ -1,13 +1,22 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/",
-});
+const path = require("path");
+const fs = require("fs");
 
+// Load service account key securely from environment variable
+const serviceAccountPath =
+process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(require("os").homedir(),
+    ".firebase-adminsdk.json");
+
+if (!fs.existsSync(serviceAccountPath)) {
+  console.error("Service account key file not found:", serviceAccountPath);
+  process.exit(1);
+}
+
+// Initialize Firebase Admin SDK
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/", // 🔹 Replace with your actual database URL
+  credential: admin.credential.cert(require(serviceAccountPath)),
+  databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/",
 });
 
 // Reference to track whether an admin has been set
@@ -25,8 +34,8 @@ exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
     if (!firstAdminSet) {
       // No admin is set yet, make this user admin
       await admin.auth().setCustomUserClaims(user.uid, {admin: true});
-      await adminsRef.child(user.uid).set({email:
-        user.email || user.phoneNumber});
+      await adminsRef.child(user.uid).set(
+          {email: user.email || user.phoneNumber});
 
       // Mark that an admin has been set
       await adminFlagRef.set(true);
@@ -36,6 +45,29 @@ exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
     }
   } catch (error) {
     console.error("Error setting first admin:", error);
+  }
+});
+
+/**
+ * Function to allow an admin to grant admin privileges to other users.
+ */
+exports.addAdmin = functions.https.onCall(async (data, context) => {
+  if (!context.auth || !context.auth.token.admin) {
+    throw new functions.https.HttpsError("permission-denied",
+        "Only admins can add new admins.");
+  }
+
+  const {userId} = data;
+
+  try {
+    await admin.auth().setCustomUserClaims(userId, {admin: true});
+    await adminsRef.child(userId).set(true);
+    console.log("Admin added:", userId);
+    return {success: true, message: "User granted admin privileges."};
+  } catch (error) {
+    console.error("Error adding admin:", error);
+    throw new
+    functions.https.HttpsError("internal", "Could not grant admin privileges.");
   }
 });
 
