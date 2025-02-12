@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const path = require("path");
 const fs = require("fs");
@@ -19,13 +19,12 @@ admin.initializeApp({
   databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/",
 });
 
-// References for admin flag and admin users list
+// References to track admin state
 const adminFlagRef = admin.database().ref("admin/firstAdminSet");
 const adminsRef = admin.database().ref("admins");
 
 /**
- * When a new user signs up, use a transaction to check if an admin exists.
- * If not, atomically mark the flag and set this user as admin.
+ * When a new user signs up, make them admin if no admin exists.
  */
 exports.setFirstAdmin = functions.auth.user.onCreate(async (user) => {
   if (!user || !user.uid) {
@@ -34,27 +33,19 @@ exports.setFirstAdmin = functions.auth.user.onCreate(async (user) => {
   }
 
   try {
-    // Use a transaction to check and update the admin flag atomically.
-    const transactionResult = await adminFlagRef.transaction((currentValue) => {
-      if (!currentValue) {
-        // If no admin is set, return true to mark that an admin is now set.
-        return true;
-      }
-      // Otherwise, do not modify the flag.
-      return currentValue;
-    });
+    const snapshot = await adminFlagRef.once("value");
+    const firstAdminSet = snapshot.val();
 
-    if (transactionResult.committed &&
-      transactionResult.snapshot.val() === true) {
-      // We successfully marked the flag, so this user becomes the first admin.
+    if (!firstAdminSet) {
+      // No admin is set yet, so set this user as the first admin.
       await admin.auth().setCustomUserClaims(user.uid, {admin: true});
       await adminsRef.child(user.uid).set({
         email: user.email || user.phoneNumber,
       });
+      await adminFlagRef.set(true);
       console.log("First admin assigned:", user.uid);
     } else {
-      console.log("Admin already exists; not setting auto-admin for user:",
-          user.uid);
+      console.log("User is not auto-admin:", user.uid);
     }
   } catch (error) {
     console.error("Error setting first admin:", error);
@@ -64,8 +55,7 @@ exports.setFirstAdmin = functions.auth.user.onCreate(async (user) => {
 });
 
 /**
- * Callable function to allow an existing
- * admin to grant admin privileges to another user.
+ * Callable function to allow an admin to grant admin privileges to other users.
  */
 exports.addAdmin = functions.https.onCall(async (data, context) => {
   if (!context.auth || !context.auth.token.admin) {
@@ -88,27 +78,23 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
     return {success: true, message: "User granted admin privileges."};
   } catch (error) {
     console.error("Error adding admin:", error);
-    throw new functions.https.HttpsError("internal",
-        "Could not grant admin privileges.");
+    throw new
+    functions.https.HttpsError("internal", "Could not grant admin privileges.");
   }
 });
 
 /**
- * Scheduled function to delete all
- * users and reset the environment every 3 days.
+ * Scheduled function to delete all users and reset environment every 3 days.
  */
 exports.resetEnvironment =
 functions.pubsub.schedule("every 3 days").onRun(async () => {
   try {
-    // List all users and delete them
     const listUsersResult = await admin.auth().listUsers();
     const deletePromises = listUsersResult.users.map((user) => {
       console.log("Deleting user:", user.uid);
       return admin.auth().deleteUser(user.uid);
     });
-
     await Promise.all(deletePromises);
-    // Reset admin-related flags and data in the database
     await adminsRef.remove();
     await adminFlagRef.set(false);
     console.log("All users deleted. Environment reset.");
