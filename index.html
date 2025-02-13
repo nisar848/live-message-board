@@ -36,6 +36,10 @@
     .message p {
       margin: 5px 0;
     }
+    /* Optionally hide the caret in the timer input to discourage editing */
+    #timerDisplay {
+      caret-color: transparent;
+    }
   </style>
 </head>
 <body>
@@ -64,7 +68,7 @@
     
     <!-- Timer Container (hidden by default) -->
     <div id="timer-container" class="feature-container" style="display: none;">
-      <!-- Timer input now uses flatpickr -->
+      <!-- Timer input uses flatpickr and is readonly -->
       <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" readonly />
       <div id="timer-controls">
         <button id="startTimer">Start Timer</button>
@@ -136,7 +140,6 @@
     const database = firebase.database();
 
     // Apply flatpickr time picker to timerDisplay, disabling manual input.
-    // Save the instance for later resetting.
     window.addEventListener('DOMContentLoaded', () => {
       const timerInput = document.getElementById('timerDisplay');
       window.fpInstance = flatpickr(timerInput, {
