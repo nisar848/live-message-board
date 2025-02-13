@@ -32,15 +32,27 @@
       margin-top: 0;
       font-size: 1.8em;
     }
-    textarea {
+    input[type="text"], textarea {
       width: 100%;
-      height: 150px;
       font-size: 1em;
       padding: 10px;
       border-radius: 8px;
       border: none;
-      resize: vertical;
       margin-bottom: 15px;
+    }
+    textarea {
+      height: 150px;
+      resize: vertical;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      font-size: 0.9em;
+    }
+    .checkbox-container input[type="checkbox"] {
+      margin-right: 8px;
     }
     button {
       width: 100%;
@@ -68,6 +80,14 @@
 <body>
   <div class="container">
     <h1>Submit Your Gem</h1>
+    <!-- Optional name field -->
+    <input type="text" id="nameInput" placeholder="Your Name (optional)" />
+    <!-- Checkbox for anonymity -->
+    <div class="checkbox-container">
+      <input type="checkbox" id="anonymousCheckbox">
+      <label for="anonymousCheckbox">Remain Anonymous</label>
+    </div>
+    <!-- Message textarea -->
     <textarea id="messageInput" placeholder="Type your gem, message, or reflection here..."></textarea>
     <button id="submitButton">Submit</button>
     <a class="back-link" href="index.html">Back to Live Gem Board</a>
@@ -101,14 +121,23 @@
         alert("Please enter a message before submitting.");
         return;
       }
+      
+      // Get the optional name and check the anonymous checkbox
+      const nameInput = document.getElementById('nameInput').value.trim();
+      const isAnonymous = document.getElementById('anonymousCheckbox').checked;
+      const name = isAnonymous || nameInput === "" ? "Anonymous" : nameInput;
+      
       // Push the message to the "pendingMessages" node for admin moderation.
       push(ref(database, "pendingMessages"), {
         text: message,
+        name: name,
         timestamp: Date.now()
       })
       .then(() => {
         alert("Your gem has been submitted and is awaiting approval.");
         document.getElementById('messageInput').value = "";
+        document.getElementById('nameInput').value = "";
+        document.getElementById('anonymousCheckbox').checked = false;
       })
       .catch((error) => {
         console.error("Error submitting message:", error);
