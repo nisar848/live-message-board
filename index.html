@@ -6,12 +6,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Gem Board</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Additional inline styles for the new approved messages section and header buttons */
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    header button:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+    #approved-messages {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
+      max-height: 70vh;
+      overflow-y: auto;
+      display: none; /* Hidden by default */
+      text-align: left;
+    }
+    #approved-messages h2 {
+      margin-top: 0;
+    }
+    .message {
+      border: 1px solid rgba(255,255,255,0.5);
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.3);
+    }
+    .message p {
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
   <!-- Fullscreen Toggle Button (fixed at top right) -->
   <div id="fullscreen-container">
     <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
   </div>
+  
+  <header>
+    <h1>Live Gem Board</h1>
+    <!-- Only one button to toggle viewing approved gems/questions -->
+    <button id="toggle-approved">View Gems/Questions</button>
+  </header>
   
   <!-- Main Display Container: Centers the feature panels and holds the feature buttons -->
   <div id="main-display">
@@ -29,7 +81,6 @@
     
     <!-- Timer Container (hidden by default) -->
     <div id="timer-container" class="feature-container" style="display: none;">
-      <!-- Editable input field for setting the timer directly in HH:MM:SS format -->
       <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" />
       <div id="timer-controls">
         <button id="startTimer">Start Timer</button>
@@ -63,6 +114,12 @@
     <p>Scan this QR code with your mobile device to submit your gem or reflection.</p>
   </div>
   
+  <!-- Approved Messages Section -->
+  <div id="approved-messages">
+    <h2>Gems/Questions</h2>
+    <div id="messages-container"></div>
+  </div>
+  
   <!-- Footer -->
   <footer>
     <p>&copy; Zain Nisar 2025</p>
@@ -70,7 +127,60 @@
   
   <!-- Include QRCode.js library for generating QR codes -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Link to the JavaScript file as a module -->
+  <!-- Firebase Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database-compat.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
+      authDomain: "live-message-board.firebaseapp.com",
+      databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/",
+      projectId: "live-message-board",
+      storageBucket: "live-message-board.firebasestorage.app",
+      messagingSenderId: "465980009336",
+      appId: "1:465980009336:web:38b62c2587ded00596b68d"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Toggle the display of approved messages when the button is clicked
+    const toggleButton = document.getElementById('toggle-approved');
+    const approvedMessagesDiv = document.getElementById('approved-messages');
+    let messagesLoaded = false;
+
+    toggleButton.addEventListener('click', () => {
+      if (approvedMessagesDiv.style.display === 'none' || approvedMessagesDiv.style.display === '') {
+        approvedMessagesDiv.style.display = 'block';
+        toggleButton.textContent = 'Hide Gems/Questions';
+        if (!messagesLoaded) {
+          loadApprovedMessages();
+          messagesLoaded = true;
+        }
+      } else {
+        approvedMessagesDiv.style.display = 'none';
+        toggleButton.textContent = 'View Gems/Questions';
+      }
+    });
+
+    // Function to load approved messages from the "messages" node
+    function loadApprovedMessages() {
+      const messagesRef = firebase.database().ref('messages');
+      messagesRef.on('child_added', snapshot => {
+        const msg = snapshot.val();
+        const key = snapshot.key;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+        messageDiv.innerHTML = `
+          <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
+          <p>${msg.text}</p>
+        `;
+        document.getElementById('messages-container').appendChild(messageDiv);
+      });
+    }
+  </script>
+  <!-- Link to your existing script.js if needed -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
