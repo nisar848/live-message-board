@@ -19,15 +19,15 @@
   }
 }
 
-/* Use the full viewport width but allow the height to adjust */
+/* Use the full viewport width but allow the height to adjust naturally */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh; /* Allow content to expand if needed */
+  min-height: 100vh; /* Allow content to expand beyond the viewport */
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  overflow-x: hidden;  /* Hide horizontal overflow, but allow vertical scrolling */
+  overflow-x: hidden;  /* Hide horizontal overflow only */
 }
 
 /* Body as a flex container dividing the viewport vertically */
@@ -52,14 +52,14 @@ body {
   margin: 20px auto;
   padding: 20px;
   border-radius: 10px;
-  background: none !important;
-  background-color: transparent !important;
-  background-image: none !important;
+  background: none !important;            /* Remove any background shorthand */
+  background-color: transparent !important; /* Force transparent background */
+  background-image: none !important;       /* Remove any background image */
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   text-align: center;
-  color: #fff;
+  color: #fff; /* White text for contrast */
 }
 
 /* Glassmorphism styling for feature containers (Clock, Timer, Stopwatch) */
