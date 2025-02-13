@@ -13,6 +13,7 @@
       text-align: center;
       padding: 20px;
     }
+    /* Make the admin panel scrollable */
     #admin-panel {
       max-width: 600px;
       margin: auto;
@@ -20,6 +21,8 @@
       border-radius: 15px;
       background: rgba(255, 255, 255, 0.2);
       box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .hidden { 
       display: none; 
@@ -37,7 +40,8 @@
     button:hover { 
       background: rgba(255,255,255,0.5); 
     }
-    .pending-message {
+    /* Styling for both pending and approved messages */
+    .pending-message, .approved-message {
       border: 1px solid rgba(255, 255, 255, 0.5);
       margin: 10px 0;
       padding: 10px;
@@ -60,10 +64,16 @@
       <button id="sign-out">Sign Out</button>
     </div>
 
-    <!-- Moderation Panel -->
+    <!-- Moderation Panel for Pending Messages -->
     <div id="moderation-panel" class="hidden">
       <h2>Pending Messages</h2>
       <div id="pending-messages"></div>
+    </div>
+
+    <!-- Approved Messages Panel -->
+    <div id="approved-panel" class="hidden">
+      <h2>Approved Messages</h2>
+      <div id="approved-messages"></div>
     </div>
   </div>
 
@@ -120,7 +130,9 @@
       document.getElementById('firebaseui-auth-container').classList.add('hidden');
       document.getElementById('admin-content').classList.remove('hidden');
       document.getElementById('moderation-panel').classList.remove('hidden');
+      document.getElementById('approved-panel').classList.remove('hidden');
       loadPendingMessages();
+      loadApprovedMessages();
     }
 
     // ✅ Listen for Auth Changes
@@ -131,6 +143,7 @@
         document.getElementById('firebaseui-auth-container').classList.remove('hidden');
         document.getElementById('admin-content').classList.add('hidden');
         document.getElementById('moderation-panel').classList.add('hidden');
+        document.getElementById('approved-panel').classList.add('hidden');
         ui.start('#firebaseui-auth-container', uiConfig);
       }
     });
@@ -143,7 +156,7 @@
         const key = snapshot.key;
         const msgDiv = document.createElement('div');
         msgDiv.className = 'pending-message';
-        msgDiv.id = 'message-' + key;
+        msgDiv.id = 'pending-' + key;
         msgDiv.innerHTML = `
           <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
           <p>${msg.text}</p>
@@ -151,6 +164,34 @@
           <button onclick="denyMessage('${key}')">Deny</button>
         `;
         document.getElementById('pending-messages').appendChild(msgDiv);
+      });
+      pendingRef.on('child_removed', snapshot => {
+        const key = snapshot.key;
+        const elem = document.getElementById('pending-' + key);
+        if (elem) elem.remove();
+      });
+    }
+
+    // ✅ Load Approved Messages
+    function loadApprovedMessages() {
+      const approvedRef = firebase.database().ref('messages');
+      approvedRef.on('child_added', snapshot => {
+        const msg = snapshot.val();
+        const key = snapshot.key;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'approved-message';
+        msgDiv.id = 'approved-' + key;
+        msgDiv.innerHTML = `
+          <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
+          <p>${msg.text}</p>
+          <button onclick="deleteApprovedMessage('${key}')">Delete</button>
+        `;
+        document.getElementById('approved-messages').appendChild(msgDiv);
+      });
+      approvedRef.on('child_removed', snapshot => {
+        const key = snapshot.key;
+        const elem = document.getElementById('approved-' + key);
+        if (elem) elem.remove();
       });
     }
 
@@ -160,7 +201,7 @@
       approveMessageCallable({ messageId: key })
         .then(result => {
           console.log('Message approved via Cloud Function:', result.data);
-          removeMessageFromUI(key);
+          // The pending message UI will be updated via the child_removed listener.
         })
         .catch(error => {
           console.error('Error approving message via Cloud Function:', error);
@@ -173,19 +214,22 @@
       denyMessageCallable({ messageId: key })
         .then(result => {
           console.log('Message denied via Cloud Function:', result.data);
-          removeMessageFromUI(key);
+          // The pending message UI will be updated via the child_removed listener.
         })
         .catch(error => {
           console.error('Error denying message via Cloud Function:', error);
         });
     }
 
-    // ✅ Remove the message element from the UI after moderation
-    function removeMessageFromUI(key) {
-      const msgElem = document.getElementById('message-' + key);
-      if (msgElem) {
-        msgElem.remove();
-      }
+    // ✅ Delete Approved Message directly from the database
+    function deleteApprovedMessage(key) {
+      firebase.database().ref('messages/' + key).remove()
+        .then(() => {
+          console.log('Approved message deleted:', key);
+        })
+        .catch(error => {
+          console.error('Error deleting approved message:', error);
+        });
     }
 
     // ✅ Sign Out Function
