@@ -15,7 +15,10 @@
       max-width: 600px;
       text-align: center;
     }
-    #firebaseui-auth-container, #admin-content, #error-message, #moderation-panel {
+    #firebaseui-auth-container,
+    #admin-content,
+    #error-message,
+    #moderation-panel {
       margin: 20px auto;
       padding: 20px;
       border-radius: 15px;
@@ -45,12 +48,12 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      background: rgba(255,255,255,0.3);
+      background: rgba(255, 255, 255, 0.3);
       color: #fff;
       transition: background 0.3s ease;
     }
     button:hover {
-      background: rgba(255,255,255,0.5);
+      background: rgba(255, 255, 255, 0.5);
     }
   </style>
 </head>
@@ -67,7 +70,7 @@
     <!-- FirebaseUI Auth Container: Shown when user is not signed in -->
     <div id="firebaseui-auth-container"></div>
     
-    <!-- Admin Content: Shown only if the user has admin privileges -->
+    <!-- Admin Content: Shown only if the signed-in user has admin privileges -->
     <div id="admin-content" style="display: none;">
       <h2>Welcome, Admin!</h2>
       <p>This is your secure admin dashboard.</p>
@@ -124,16 +127,15 @@
     const uiConfig = {
       callbacks: {
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-          return false; // Prevent auto redirect; UI updates via auth state listener.
+          // Prevent automatic redirect; UI updates via auth state listener.
+          return false;
         }
       },
       signInOptions: [
         {
           provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-          recaptchaParameters: {
-            size: 'invisible'  // Use invisible reCAPTCHA
-          },
-          defaultCountry: 'US' // Optional: Set default country for phone sign-in.
+          recaptchaParameters: { size: 'invisible' },
+          defaultCountry: 'US'
         },
         firebase.auth.EmailAuthProvider.PROVIDER_ID
       ],
@@ -150,7 +152,6 @@
       pendingRef.on('child_added', snapshot => {
         const msg = snapshot.val();
         const key = snapshot.key;
-        // Create a container div for the message.
         const msgDiv = document.createElement('div');
         msgDiv.className = 'pending-message';
         msgDiv.id = `pending-${key}`;
@@ -165,16 +166,9 @@
           const approvedData = { ...msg, approved: true };
           // Move message to "messages" node.
           firebase.database().ref('messages').push(approvedData)
-            .then(() => {
-              // Remove from pendingMessages.
-              return firebase.database().ref(`pendingMessages/${key}`).remove();
-            })
-            .then(() => {
-              msgDiv.remove();
-            })
-            .catch(err => {
-              console.error("Error approving message:", err);
-            });
+            .then(() => firebase.database().ref(`pendingMessages/${key}`).remove())
+            .then(() => { msgDiv.remove(); })
+            .catch(err => console.error("Error approving message:", err));
         });
         // Create Deny button.
         const denyBtn = document.createElement('button');
@@ -182,16 +176,11 @@
         denyBtn.style.marginLeft = "10px";
         denyBtn.addEventListener('click', () => {
           firebase.database().ref(`pendingMessages/${key}`).remove()
-            .then(() => {
-              msgDiv.remove();
-            })
-            .catch(err => {
-              console.error("Error denying message:", err);
-            });
+            .then(() => { msgDiv.remove(); })
+            .catch(err => console.error("Error denying message:", err));
         });
         msgDiv.appendChild(approveBtn);
         msgDiv.appendChild(denyBtn);
-        // Append the message div to the pending messages container.
         document.getElementById('pending-messages').appendChild(msgDiv);
       });
     }
@@ -203,14 +192,12 @@
         try {
           const idTokenResult = await user.getIdTokenResult();
           if (idTokenResult.claims && idTokenResult.claims.admin) {
-            // User is an admin: show admin content and moderation panel.
             document.getElementById('firebaseui-auth-container').style.display = 'none';
             document.getElementById('admin-content').style.display = 'block';
             document.getElementById('error-message').style.display = 'none';
             document.getElementById('moderation-panel').style.display = 'block';
             loadPendingMessages();
           } else {
-            // User is signed in but not an admin.
             document.getElementById('firebaseui-auth-container').style.display = 'none';
             document.getElementById('admin-content').style.display = 'none';
             document.getElementById('moderation-panel').style.display = 'none';
@@ -227,7 +214,6 @@
       if (user) {
         checkAdmin();
       } else {
-        // If signed out, reset UI.
         document.getElementById('firebaseui-auth-container').style.display = 'block';
         document.getElementById('admin-content').style.display = 'none';
         document.getElementById('error-message').style.display = 'none';
@@ -240,34 +226,26 @@
     document.getElementById('sign-out').addEventListener('click', () => {
       firebase.auth().signOut().then(() => {
         ui.start('#firebaseui-auth-container', uiConfig);
-      }).catch(error => {
-        console.error("Sign out error:", error);
-      });
+      }).catch(error => console.error("Sign out error:", error));
     });
 
     // Sign-out functionality for non-admin error.
     document.getElementById('sign-out-error').addEventListener('click', () => {
       firebase.auth().signOut().then(() => {
         ui.start('#firebaseui-auth-container', uiConfig);
-      }).catch(error => {
-        console.error("Sign out error:", error);
-      });
+      }).catch(error => console.error("Sign out error:", error));
     });
 
-    // Fullscreen toggle functionality (same as in your main page).
+    // Fullscreen toggle functionality.
     document.getElementById('fullscreenToggle').addEventListener('click', () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().then(() => {
           document.getElementById('fullscreenToggle').textContent = "✕";
-        }).catch(err => {
-          console.error(`Error enabling fullscreen: ${err.message}`);
-        });
+        }).catch(err => console.error(`Error enabling fullscreen: ${err.message}`));
       } else {
         document.exitFullscreen().then(() => {
           document.getElementById('fullscreenToggle').textContent = "⛶";
-        }).catch(err => {
-          console.error(`Error exiting fullscreen: ${err.message}`);
-        });
+        }).catch(err => console.error(`Error exiting fullscreen: ${err.message}`));
       }
     });
   </script>
