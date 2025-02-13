@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Ensures the website is responsive on any device -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Live Gem Board</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- FirebaseUI CSS -->
+  <link rel="stylesheet" type="text/css" href="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.css" />
+  <style>
+    /* Additional styles for the admin panel */
+    #admin-panel {
+      margin: 20px auto;
+      max-width: 600px;
+      text-align: center;
+    }
+    #firebaseui-auth-container, #admin-content, #error-message {
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.3);
+      color: #fff;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <!-- Fullscreen Toggle Button (fixed at top right) -->
+  <div id="fullscreen-container">
+    <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
+  </div>
+  
+  <!-- Admin Panel Container -->
+  <div id="admin-panel">
+    <h1>Admin Panel</h1>
+    
+    <!-- FirebaseUI Auth Container: Shown when the user is not signed in -->
+    <div id="firebaseui-auth-container"></div>
+    
+    <!-- Admin Content: Shown only if the signed-in user has admin privileges -->
+    <div id="admin-content" style="display: none;">
+      <h2>Welcome, Admin!</h2>
+      <p>This is your secure admin dashboard.</p>
+      <button id="sign-out">Sign Out</button>
+    </div>
+    
+    <!-- Error Message: Shown if the signed-in user does not have admin privileges -->
+    <div id="error-message" style="display: none;">
+      <h2>Access Denied</h2>
+      <p>You do not have admin privileges.</p>
+      <button id="sign-out-error">Sign Out</button>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer>
+    <p>&copy; Zain Nisar 2025</p>
+  </footer>
+  
+  <!-- Load Firebase libraries (compat versions) from the CDN -->
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-auth-compat.js"></script>
+  <!-- Optionally, if you need analytics: -->
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics-compat.js"></script>
+  <!-- FirebaseUI -->
+  <script src="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.js"></script>
+  
+  <script>
+    // Your Firebase configuration (replace with your actual config values)
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
+      authDomain: "live-message-board.firebaseapp.com",
+      projectId: "live-message-board",
+      storageBucket: "live-message-board.firebasestorage.app",
+      messagingSenderId: "465980009336",
+      appId: "1:465980009336:web:38b62c2587ded00596b68d",
+      measurementId: "G-4KCL1DYY8R"
+    };
+
+    // Initialize Firebase (using compat libraries)
+    firebase.initializeApp(firebaseConfig);
+    // Optionally, initialize analytics
+    if (firebase.analytics) {
+      firebase.analytics();
+    }
+
+    // FirebaseUI configuration
+    const uiConfig = {
+      callbacks: {
+        signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+          // Prevent automatic redirect—handle UI changes via auth state listener.
+          return false;
+        }
+      },
+      signInOptions: [
+        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        firebase.auth.EmailAuthProvider.PROVIDER_ID
+      ],
+      signInFlow: 'popup'
+    };
+
+    // Initialize FirebaseUI Auth instance and start widget.
+    const ui = new firebaseui.auth.AuthUI(firebase.auth());
+    ui.start('#firebaseui-auth-container', uiConfig);
+
+    // Function to check if the signed-in user has admin privileges.
+    async function checkAdmin() {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        try {
+          const idTokenResult = await user.getIdTokenResult();
+          if (idTokenResult.claims && idTokenResult.claims.admin) {
+            // User has admin claim: show admin content.
+            document.getElementById('firebaseui-auth-container').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+          } else {
+            // User is signed in but not an admin.
+            document.getElementById('firebaseui-auth-container').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'none';
+            document.getElementById('error-message').style.display = 'block';
+          }
+        } catch (error) {
+          console.error("Error checking admin claim:", error);
+        }
+      }
+    }
+
+    // Listen for authentication state changes.
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        checkAdmin();
+      } else {
+        // User is signed out; show FirebaseUI.
+        document.getElementById('firebaseui-auth-container').style.display = 'block';
+        document.getElementById('admin-content').style.display = 'none';
+        document.getElementById('error-message').style.display = 'none';
+        ui.start('#firebaseui-auth-container', uiConfig);
+      }
+    });
+
+    // Sign-out functionality for admin content.
+    document.getElementById('sign-out').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        ui.start('#firebaseui-auth-container', uiConfig);
+      }).catch(error => {
+        console.error("Sign out error:", error);
+      });
+    });
+
+    // Sign-out functionality for non-admin error.
+    document.getElementById('sign-out-error').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        ui.start('#firebaseui-auth-container', uiConfig);
+      }).catch(error => {
+        console.error("Sign out error:", error);
+      });
+    });
+
+    // Fullscreen toggle functionality (same as in your main page).
+    document.getElementById('fullscreenToggle').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          document.getElementById('fullscreenToggle').textContent = "✕";
+        }).catch(err => {
+          console.error(`Error enabling fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen().then(() => {
+          document.getElementById('fullscreenToggle').textContent = "⛶";
+        }).catch(err => {
+          console.error(`Error exiting fullscreen: ${err.message}`);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
