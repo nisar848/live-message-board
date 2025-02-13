@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="style.css">
   <style>
     /* Additional inline styles for the new toggle button and approved messages section */
-    /* We'll assume your external style.css already has most styles.
-       Here we add styles for the approved messages section if needed. */
     #approved-messages {
       width: 90%;
       max-width: 800px;
@@ -136,26 +134,29 @@
     const timerContainer = document.getElementById("timer-container");
     const stopwatchContainer = document.getElementById("stopwatch-container");
     const approvedMessagesDiv = document.getElementById("approved-messages");
-    
+    let messagesLoaded = false;
+
     btnGems.addEventListener("click", () => {
-      // If the clock container is visible, hide all feature containers and show approved messages.
       if (clockContainer.style.display !== "none") {
+        // Hide feature containers and show approved messages.
         clockContainer.style.display = "none";
         timerContainer.style.display = "none";
         stopwatchContainer.style.display = "none";
         approvedMessagesDiv.style.display = "block";
         btnGems.textContent = "Back to Clock";
+        if (!messagesLoaded) {
+          loadApprovedMessages();
+          messagesLoaded = true;
+        }
       } else {
-        // Otherwise, show the clock container and hide approved messages.
+        // Show the clock container and hide approved messages.
         clockContainer.style.display = "flex"; // Adjust if needed
         approvedMessagesDiv.style.display = "none";
         btnGems.textContent = "Gems/Questions";
       }
     });
 
-    // (Other feature button event listeners for Clock, Timer, Stopwatch would be here, presumably in script.js)
-
-    // Approved Messages loader (if needed outside of the toggle)
+    // Function to load approved messages from the "messages" node
     function loadApprovedMessages() {
       const messagesRef = firebase.database().ref('messages');
       messagesRef.on('child_added', snapshot => {
@@ -171,8 +172,6 @@
         document.getElementById('messages-container').appendChild(messageDiv);
       });
     }
-    // Optionally load approved messages on page load if already toggled
-    // loadApprovedMessages();
 
     // Delete Approved Message
     function deleteApprovedMessage(key) {
