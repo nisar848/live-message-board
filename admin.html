@@ -98,6 +98,12 @@
     // ✅ Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
+    // ✅ Function to check for debug mode in the URL
+    function isDebugMode() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.has("debug") && urlParams.get("debug") === "admin";
+    }
+
     // ✅ FirebaseUI Auth Configuration (Sign-in Only, No New User Creation)
     const uiConfig = {
       callbacks: {
@@ -120,8 +126,18 @@
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
     ui.start('#firebaseui-auth-container', uiConfig);
 
-    // ✅ Check if User is an Admin
+    // ✅ Check if User is an Admin or in Debug Mode
     async function checkAdmin(user) {
+      if (isDebugMode()) {
+        console.warn("🚀 DEBUG MODE ENABLED - Admin panel unlocked!");
+        document.getElementById('firebaseui-auth-container').classList.add('hidden');
+        document.getElementById('admin-content').classList.remove('hidden');
+        document.getElementById('error-message').classList.add('hidden');
+        document.getElementById('moderation-panel').classList.remove('hidden');
+        loadPendingMessages();
+        return;
+      }
+
       if (!user) return;
 
       try {
@@ -150,11 +166,13 @@
       if (user) {
         checkAdmin(user);
       } else {
-        document.getElementById('firebaseui-auth-container').classList.remove('hidden');
-        document.getElementById('admin-content').classList.add('hidden');
-        document.getElementById('error-message').classList.add('hidden');
-        document.getElementById('moderation-panel').classList.add('hidden');
-        ui.start('#firebaseui-auth-container', uiConfig);
+        if (!isDebugMode()) {
+          document.getElementById('firebaseui-auth-container').classList.remove('hidden');
+          document.getElementById('admin-content').classList.add('hidden');
+          document.getElementById('error-message').classList.add('hidden');
+          document.getElementById('moderation-panel').classList.add('hidden');
+          ui.start('#firebaseui-auth-container', uiConfig);
+        }
       }
     });
 
