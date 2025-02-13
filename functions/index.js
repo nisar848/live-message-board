@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 
@@ -20,8 +21,7 @@ exports.submitMessage = functions.https.onCall(async (data, context) => {
   const {text, name} = data;
   if (!text || text.trim().length === 0) {
     console.warn("⚠️ [submitMessage] Invalid message text:", text);
-    throw new functions.https.HttpsError("invalid-argument",
-        "Message text is required.");
+    throw new functions.https.HttpsError("invalid-argument", "Message text is required.");
   }
 
   const messageData = {
@@ -31,14 +31,16 @@ exports.submitMessage = functions.https.onCall(async (data, context) => {
   };
 
   try {
-    await pendingMessagesRef.push(messageData);
-    console.info("✅ [submitMessage] Message submitted:", messageData);
-    return {success: true, message:
-      "Message submitted and awaiting approval."};
+    // Use push() to generate a unique key for the pending message.
+    const newMessageRef = await pendingMessagesRef.push(messageData);
+    const messageId = newMessageRef.key;
+    // Update the message to include its unique id.
+    await newMessageRef.set({...messageData, id: messageId});
+    console.info("✅ [submitMessage] Message submitted with id:", messageId, messageData);
+    return {success: true, message: "Message submitted and awaiting approval.", id: messageId};
   } catch (error) {
     console.error("❌ [submitMessage] Error submitting message:", error);
-    throw new functions.https.HttpsError("internal",
-        "Error submitting message.");
+    throw new functions.https.HttpsError("internal", "Error submitting message.");
   }
 });
 
@@ -50,46 +52,40 @@ exports.approveMessage = functions.https.onCall(async (data, context) => {
 
   if (!context.auth) {
     console.warn("⚠️ [approveMessage] Unauthorized attempt approving message.");
-    throw new functions.https.HttpsError("unauthenticated",
-        "You must be signed in to approve messages.");
+    throw new functions.https.HttpsError("unauthenticated", "You must be signed in to approve messages.");
   }
 
   const {messageId} = data;
   if (!messageId) {
     console.warn("⚠️ [approveMessage] No message ID provided.");
-    throw new functions.https.HttpsError("invalid-argument",
-        "Message ID is required.");
+    throw new functions.https.HttpsError("invalid-argument", "Message ID is required.");
   }
 
   try {
     console.info(`🔎 [approveMessage] Fetching message: ${messageId}`);
-    const messageSnapshot =
-    await pendingMessagesRef.child(messageId).once("value");
+    const messageSnapshot = await pendingMessagesRef.child(messageId).once("value");
     const messageData = messageSnapshot.val();
 
     if (!messageData) {
-      // eslint-disable-next-line max-len
       console.warn(`⚠️ [approveMessage] Message ${messageId} not found in pending.`);
       throw new functions.https.HttpsError("not-found", "Message not found.");
     }
 
-    console.info(`✅ [approveMessage] Moving message ${messageId} to messages.`);
-    // Option 1: Retain the same message ID in the approved messages
-    // await messagesRef.child(messageId).set(messageData);
+    // Prepare a multi-path update:
+    // 1. Write the message data (including the id) to the "messages" node.
+    // 2. Remove the message from the "pendingMessages" node.
+    const updates = {};
+    updates[`messages/${messageId}`] = messageData;
+    updates[`pendingMessages/${messageId}`] = null;
 
-    // Option 2: Generate a new key using push (default behavior)
-    await messagesRef.push(messageData);
+    console.info(`✅ [approveMessage] Performing multi-path update for message ${messageId}.`);
+    await db.ref().update(updates);
 
-    // Remove the message from pendingMessages
-    await pendingMessagesRef.child(messageId).remove();
-
-    console.info("✅ [approveMessage] Message approved and published:",
-        messageData);
-    return {success: true, message: "Message approved and published."};
+    console.info("✅ [approveMessage] Message approved and published:", messageData);
+    return {success: true, message: "Message approved and published.", id: messageId};
   } catch (error) {
     console.error("❌ [approveMessage] Error approving message:", error);
-    throw new functions.https.HttpsError("internal",
-        "Error approving message.");
+    throw new functions.https.HttpsError("internal", "Error approving message.");
   }
 });
 
@@ -101,23 +97,20 @@ exports.denyMessage = functions.https.onCall(async (data, context) => {
 
   if (!context.auth) {
     console.warn("⚠️ [denyMessage] Unauthorized attempt to deny message.");
-    throw new functions.https.HttpsError("unauthenticated",
-        "You must be signed in to deny messages.");
+    throw new functions.https.HttpsError("unauthenticated", "You must be signed in to deny messages.");
   }
 
   const {messageId} = data;
   if (!messageId) {
     console.warn("⚠️ [denyMessage] No message ID provided.");
-    throw new functions.https.HttpsError("invalid-argument",
-        "Message ID is required.");
+    throw new functions.https.HttpsError("invalid-argument", "Message ID is required.");
   }
 
   try {
-    // eslint-disable-next-line max-len
     console.info(`🗑️ [denyMessage] Deleting message ${messageId} from pendingMessages.`);
     await pendingMessagesRef.child(messageId).remove();
     console.info(`✅ [denyMessage] Message denied and deleted: ${messageId}`);
-    return {success: true, message: "Message denied and deleted."};
+    return {success: true, message: "Message denied and deleted.", id: messageId};
   } catch (error) {
     console.error("❌ [denyMessage] Error denying message:", error);
     throw new functions.https.HttpsError("internal", "Error denying message.");

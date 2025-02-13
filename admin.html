@@ -147,7 +147,7 @@
         msgDiv.innerHTML = `
           <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
           <p>${msg.text}</p>
-          <button onclick="approveMessage('${key}', ${JSON.stringify(msg)})">Approve</button>
+          <button onclick="approveMessage('${key}')">Approve</button>
           <button onclick="denyMessage('${key}')">Deny</button>
         `;
         document.getElementById('pending-messages').appendChild(msgDiv);
@@ -155,7 +155,7 @@
     }
 
     // ✅ Approve Message using Cloud Function
-    function approveMessage(key, msg) {
+    function approveMessage(key) {
       const approveMessageCallable = firebase.functions().httpsCallable('approveMessage');
       approveMessageCallable({ messageId: key })
         .then(result => {

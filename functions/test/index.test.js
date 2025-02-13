@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-env mocha */
 const test = require("firebase-functions-test")();
 const admin = require("firebase-admin");
@@ -29,7 +30,6 @@ describe("approveMessage", () => {
 
   // Create the pending message before the test runs
   before(async () => {
-    // eslint-disable-next-line max-len
     await admin.database().ref(`pendingMessages/${testMessageId}`).set(pendingMessageData);
   });
 
@@ -37,19 +37,10 @@ describe("approveMessage", () => {
   after(async () => {
     // Remove the pending message (if it still exists)
     await admin.database().ref(`pendingMessages/${testMessageId}`).remove();
+
     // Optionally, remove the approved message from "messages"
-    // You might query by timestamp to find it and then remove it.
-    const messagesSnapshot = await admin.database().ref("messages")
-        .orderByChild("timestamp")
-        .equalTo(pendingMessageData.timestamp)
-        .once("value");
-    if (messagesSnapshot.exists()) {
-      const messages = messagesSnapshot.val();
-      const removalPromises = Object.keys(messages).map((key) =>
-        admin.database().ref(`messages/${key}`).remove(),
-      );
-      await Promise.all(removalPromises);
-    }
+    // Comment out the following line to keep the approved message in messages.
+    // await admin.database().ref(`messages/${testMessageId}`).remove();
   });
 
   it("should approve a message and move it to messages", async () => {
@@ -58,29 +49,27 @@ describe("approveMessage", () => {
     console.log(result);
 
     // Verify that the pending message has been removed
-    // eslint-disable-next-line max-len
     const pendingSnapshot = await admin.database().ref(`pendingMessages/${testMessageId}`).once("value");
     if (pendingSnapshot.exists()) {
       throw new Error("Message still exists in pendingMessages node");
     }
 
-    // eslint-disable-next-line max-len
-    // Since the approved message is added using push(), its key is auto-generated.
-    // We'll query the messages node using the unique timestamp value.
-    const messagesSnapshot = await admin.database().ref("messages")
-        .orderByChild("timestamp")
-        .equalTo(pendingMessageData.timestamp)
-        .once("value");
+    // Since the approved message is now written using the same messageId,
+    // we check directly at that location in the "messages" node.
+    const approvedSnapshot = await admin.database().ref(`messages/${testMessageId}`).once("value");
 
-    if (!messagesSnapshot.exists()) {
+    if (!approvedSnapshot.exists()) {
       throw new Error("Approved message not found in messages node");
     }
 
-    // Optionally, you can perform further assertions on the retrieved message.
-    const messages = messagesSnapshot.val();
-    const keys = Object.keys(messages);
-    if (keys.length !== 1) {
-      throw new Error("Unexpected number of messages found in messages node");
+    // Optionally, perform further assertions on the approved message's content.
+    const approvedMessage = approvedSnapshot.val();
+    if (
+      approvedMessage.name !== pendingMessageData.name ||
+      approvedMessage.text !== pendingMessageData.text ||
+      approvedMessage.timestamp !== pendingMessageData.timestamp
+    ) {
+      throw new Error("Approved message data does not match expected data");
     }
   });
 });
