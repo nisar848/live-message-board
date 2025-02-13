@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - Live Gem Board</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" type="text/css" href="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.css" />
 
   <style>
-    /* Styling */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
@@ -59,13 +58,6 @@
       <button id="sign-out">Sign Out</button>
     </div>
 
-    <!-- Access Denied Message -->
-    <div id="error-message" class="hidden">
-      <h2>Access Denied</h2>
-      <p>You do not have admin privileges.</p>
-      <button id="sign-out-error">Sign Out</button>
-    </div>
-
     <!-- Moderation Panel -->
     <div id="moderation-panel" class="hidden">
       <h2>Pending Messages</h2>
@@ -102,7 +94,7 @@
     const uiConfig = {
       callbacks: {
         signInSuccessWithAuthResult: function(authResult) {
-          checkAdmin(authResult.user);
+          showAdminPanel();
           return false; // Prevent redirect
         }
       },
@@ -120,41 +112,21 @@
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
     ui.start('#firebaseui-auth-container', uiConfig);
 
-    // ✅ Check if User is an Admin (via custom claim)
-    async function checkAdmin(user) {
-      if (!user) return;
-
-      try {
-        const idTokenResult = await user.getIdTokenResult();
-        const isAdmin = idTokenResult.claims.admin;
-
-        if (isAdmin) {
-          document.getElementById('firebaseui-auth-container').classList.add('hidden');
-          document.getElementById('admin-content').classList.remove('hidden');
-          document.getElementById('error-message').classList.add('hidden');
-          document.getElementById('moderation-panel').classList.remove('hidden');
-          loadPendingMessages();
-        } else {
-          // Not an admin
-          document.getElementById('firebaseui-auth-container').classList.add('hidden');
-          document.getElementById('admin-content').classList.add('hidden');
-          document.getElementById('moderation-panel').classList.add('hidden');
-          document.getElementById('error-message').classList.remove('hidden');
-        }
-      } catch (error) {
-        console.error("Error checking admin claim:", error);
-      }
+    // ✅ Show Admin Panel After Login
+    function showAdminPanel() {
+      document.getElementById('firebaseui-auth-container').classList.add('hidden');
+      document.getElementById('admin-content').classList.remove('hidden');
+      document.getElementById('moderation-panel').classList.remove('hidden');
+      loadPendingMessages();
     }
 
     // ✅ Listen for Auth Changes
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        checkAdmin(user);
+        showAdminPanel();
       } else {
-        // No user => Show login UI
         document.getElementById('firebaseui-auth-container').classList.remove('hidden');
         document.getElementById('admin-content').classList.add('hidden');
-        document.getElementById('error-message').classList.add('hidden');
         document.getElementById('moderation-panel').classList.add('hidden');
         ui.start('#firebaseui-auth-container', uiConfig);
       }
@@ -191,9 +163,8 @@
       firebase.database().ref(`pendingMessages/${key}`).remove();
     }
 
-    // ✅ Sign Out Functions
+    // ✅ Sign Out Function
     document.getElementById('sign-out').addEventListener('click', () => firebase.auth().signOut());
-    document.getElementById('sign-out-error').addEventListener('click', () => firebase.auth().signOut());
   </script>
 </body>
 </html>
