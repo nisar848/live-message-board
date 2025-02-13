@@ -48,12 +48,12 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255,255,255,0.3);
       color: #fff;
       transition: background 0.3s ease;
     }
     button:hover {
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255,255,255,0.5);
     }
   </style>
 </head>
@@ -70,7 +70,7 @@
     <!-- FirebaseUI Auth Container: Shown when user is not signed in -->
     <div id="firebaseui-auth-container"></div>
     
-    <!-- Admin Content: Shown only if the signed-in user has admin privileges -->
+    <!-- Admin Content: Shown only if the user has admin privileges -->
     <div id="admin-content" style="display: none;">
       <h2>Welcome, Admin!</h2>
       <p>This is your secure admin dashboard.</p>
@@ -127,8 +127,7 @@
     const uiConfig = {
       callbacks: {
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-          // Prevent automatic redirect; UI updates via auth state listener.
-          return false;
+          return false; // Prevent auto redirect; UI updates via auth state listener.
         }
       },
       signInOptions: [

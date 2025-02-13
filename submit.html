@@ -99,7 +99,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
     
-    // Your Firebase configuration (same as in your main project)
+    // Your Firebase configuration (replace with your actual config)
     const firebaseConfig = {
       apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
       authDomain: "live-message-board.firebaseapp.com",
@@ -110,7 +110,7 @@
       measurementId: "G-4KCL1DYY8R"
     };
 
-    // Initialize Firebase
+    // Initialize Firebase and Database
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     
