@@ -94,16 +94,33 @@
       messagingSenderId: "465980009336",
       appId: "1:465980009336:web:38b62c2587ded00596b68d"
     };
-
+  
     // ✅ Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-
+  
     // ✅ Function to check for debug mode in the URL
     function isDebugMode() {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.has("debug") && urlParams.get("debug") === "admin";
     }
-
+  
+    // ✅ If in debug mode, immediately unlock the admin panel
+    if (isDebugMode()) {
+      console.warn("🚀 DEBUG MODE ENABLED - Admin panel unlocked!");
+  
+      // Hide the login container
+      document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('firebaseui-auth-container').style.display = 'none';
+  
+        // Show admin UI
+        document.getElementById('admin-content').classList.remove('hidden');
+        document.getElementById('moderation-panel').classList.remove('hidden');
+  
+        // Load pending messages immediately
+        loadPendingMessages();
+      });
+    }
+  
     // ✅ FirebaseUI Auth Configuration (Sign-in Only, No New User Creation)
     const uiConfig = {
       callbacks: {
@@ -121,29 +138,19 @@
       ],
       signInFlow: 'popup'
     };
-
+  
     // ✅ Initialize FirebaseUI
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
     ui.start('#firebaseui-auth-container', uiConfig);
-
-    // ✅ Check if User is an Admin or in Debug Mode
+  
+    // ✅ Check if User is an Admin
     async function checkAdmin(user) {
-      if (isDebugMode()) {
-        console.warn("🚀 DEBUG MODE ENABLED - Admin panel unlocked!");
-        document.getElementById('firebaseui-auth-container').classList.add('hidden');
-        document.getElementById('admin-content').classList.remove('hidden');
-        document.getElementById('error-message').classList.add('hidden');
-        document.getElementById('moderation-panel').classList.remove('hidden');
-        loadPendingMessages();
-        return;
-      }
-
       if (!user) return;
-
+  
       try {
         const idTokenResult = await user.getIdTokenResult();
         const isAdmin = idTokenResult.claims.admin;
-
+  
         if (isAdmin) {
           document.getElementById('firebaseui-auth-container').classList.add('hidden');
           document.getElementById('admin-content').classList.remove('hidden');
@@ -160,7 +167,7 @@
         console.error("Error checking admin claim:", error);
       }
     }
-
+  
     // ✅ Listen for Auth Changes
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
@@ -175,14 +182,14 @@
         }
       }
     });
-
+  
     // ✅ Load Pending Messages for Moderation
     function loadPendingMessages() {
       const pendingRef = firebase.database().ref('pendingMessages');
       pendingRef.on('child_added', snapshot => {
         const msg = snapshot.val();
         const key = snapshot.key;
-
+  
         const msgDiv = document.createElement('div');
         msgDiv.className = 'pending-message';
         msgDiv.innerHTML = `
@@ -191,25 +198,24 @@
           <button onclick="approveMessage('${key}', ${JSON.stringify(msg)})">Approve</button>
           <button onclick="denyMessage('${key}')">Deny</button>
         `;
-
+  
         document.getElementById('pending-messages').appendChild(msgDiv);
       });
     }
-
+  
     // ✅ Approve Message
     function approveMessage(key, msg) {
       firebase.database().ref('messages').push({ ...msg, approved: true })
         .then(() => firebase.database().ref(`pendingMessages/${key}`).remove());
     }
-
+  
     // ✅ Deny Message
     function denyMessage(key) {
       firebase.database().ref(`pendingMessages/${key}`).remove();
     }
-
+  
     // ✅ Sign Out Functions
     document.getElementById('sign-out').addEventListener('click', () => firebase.auth().signOut());
     document.getElementById('sign-out-error').addEventListener('click', () => firebase.auth().signOut());
   </script>
-</body>
-</html>
+  </body>
