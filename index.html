@@ -137,7 +137,9 @@
     let messagesLoaded = false;
 
     btnGems.addEventListener("click", () => {
-      if (clockContainer.style.display !== "none") {
+      // Use getComputedStyle to check the actual display style.
+      const clockDisplay = window.getComputedStyle(clockContainer).display;
+      if (clockDisplay !== "none") {
         // Hide feature containers and show approved messages.
         clockContainer.style.display = "none";
         timerContainer.style.display = "none";
@@ -158,10 +160,12 @@
 
     // Function to load approved messages from the "messages" node
     function loadApprovedMessages() {
+      console.log("Loading approved messages...");
       const messagesRef = firebase.database().ref('messages');
       messagesRef.on('child_added', snapshot => {
         const msg = snapshot.val();
         const key = snapshot.key;
+        console.log("Approved message added:", key, msg);
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message';
         messageDiv.innerHTML = `
@@ -171,6 +175,7 @@
         `;
         document.getElementById('messages-container').appendChild(messageDiv);
       });
+      // Optionally, add a child_removed listener to remove messages from the DOM.
     }
 
     // Delete Approved Message
