@@ -6,7 +6,6 @@
   <title>Admin Panel - Live Gem Board</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" type="text/css" href="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.css" />
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,7 +21,9 @@
       background: rgba(255, 255, 255, 0.2);
       box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
     }
-    .hidden { display: none; }
+    .hidden { 
+      display: none; 
+    }
     button {
       padding: 10px;
       font-size: 1em;
@@ -33,7 +34,9 @@
       color: #333;
       margin-top: 10px;
     }
-    button:hover { background: rgba(255,255,255,0.5); }
+    button:hover { 
+      background: rgba(255,255,255,0.5); 
+    }
     .pending-message {
       border: 1px solid rgba(255, 255, 255, 0.5);
       margin: 10px 0;
@@ -43,7 +46,6 @@
     }
   </style>
 </head>
-
 <body>
   <div id="admin-panel">
     <h1>Admin Panel</h1>
@@ -73,6 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-functions-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.js"></script>
 
   <script>
@@ -138,29 +141,51 @@
       pendingRef.on('child_added', snapshot => {
         const msg = snapshot.val();
         const key = snapshot.key;
-
         const msgDiv = document.createElement('div');
         msgDiv.className = 'pending-message';
+        msgDiv.id = 'message-' + key;
         msgDiv.innerHTML = `
           <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
           <p>${msg.text}</p>
           <button onclick="approveMessage('${key}', ${JSON.stringify(msg)})">Approve</button>
           <button onclick="denyMessage('${key}')">Deny</button>
         `;
-
         document.getElementById('pending-messages').appendChild(msgDiv);
       });
     }
 
-    // ✅ Approve Message
+    // ✅ Approve Message using Cloud Function
     function approveMessage(key, msg) {
-      firebase.database().ref('messages').push({ ...msg, approved: true })
-        .then(() => firebase.database().ref(`pendingMessages/${key}`).remove());
+      const approveMessageCallable = firebase.functions().httpsCallable('approveMessage');
+      approveMessageCallable({ messageId: key })
+        .then(result => {
+          console.log('Message approved via Cloud Function:', result.data);
+          removeMessageFromUI(key);
+        })
+        .catch(error => {
+          console.error('Error approving message via Cloud Function:', error);
+        });
     }
 
-    // ✅ Deny Message
+    // ✅ Deny Message using Cloud Function
     function denyMessage(key) {
-      firebase.database().ref(`pendingMessages/${key}`).remove();
+      const denyMessageCallable = firebase.functions().httpsCallable('denyMessage');
+      denyMessageCallable({ messageId: key })
+        .then(result => {
+          console.log('Message denied via Cloud Function:', result.data);
+          removeMessageFromUI(key);
+        })
+        .catch(error => {
+          console.error('Error denying message via Cloud Function:', error);
+        });
+    }
+
+    // ✅ Remove the message element from the UI after moderation
+    function removeMessageFromUI(key) {
+      const msgElem = document.getElementById('message-' + key);
+      if (msgElem) {
+        msgElem.remove();
+      }
     }
 
     // ✅ Sign Out Function
