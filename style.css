@@ -1,3 +1,26 @@
+/* Admin Panel styling */
+#admin-panel {
+  width: 90%;
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Adjust admin panel for smaller devices */
+@media (max-width: 600px) {
+  #admin-panel {
+    width: 95%;
+    padding: 10px;
+  }
+}
+
+/* Existing styles from your file */
+
 /* Use the full viewport and prevent scrolling */
 html, body {
   margin: 0;

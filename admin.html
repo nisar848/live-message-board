@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - Live Gem Board</title>
-  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" type="text/css" href="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.css" />
   <style>
     body {
@@ -13,9 +12,10 @@
       text-align: center;
       padding: 20px;
     }
-    /* Make the admin panel scrollable */
+    /* Responsive and scrollable admin panel */
     #admin-panel {
-      max-width: 600px;
+      width: 90%;
+      max-width: 800px;
       margin: auto;
       padding: 20px;
       border-radius: 15px;
@@ -23,6 +23,12 @@
       box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
       max-height: 80vh;
       overflow-y: auto;
+    }
+    @media (max-width: 600px) {
+      #admin-panel {
+        width: 95%;
+        padding: 10px;
+      }
     }
     .hidden { 
       display: none; 
@@ -89,7 +95,7 @@
   <script src="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.js"></script>
 
   <script>
-    // ✅ Firebase Configuration
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
       authDomain: "live-message-board.firebaseapp.com",
@@ -99,11 +105,9 @@
       messagingSenderId: "465980009336",
       appId: "1:465980009336:web:38b62c2587ded00596b68d"
     };
-
-    // ✅ Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    // ✅ FirebaseUI Auth Configuration (Sign-in Only, No New User Creation)
+    // FirebaseUI Auth Configuration
     const uiConfig = {
       callbacks: {
         signInSuccessWithAuthResult: function(authResult) {
@@ -115,17 +119,15 @@
         firebase.auth.PhoneAuthProvider.PROVIDER_ID,
         {
           provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-          disableSignUp: { status: true } // Prevent new sign-ups
+          disableSignUp: { status: true }
         }
       ],
       signInFlow: 'popup'
     };
-
-    // ✅ Initialize FirebaseUI
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
     ui.start('#firebaseui-auth-container', uiConfig);
 
-    // ✅ Show Admin Panel After Login
+    // Show Admin Panel After Login
     function showAdminPanel() {
       document.getElementById('firebaseui-auth-container').classList.add('hidden');
       document.getElementById('admin-content').classList.remove('hidden');
@@ -134,8 +136,6 @@
       loadPendingMessages();
       loadApprovedMessages();
     }
-
-    // ✅ Listen for Auth Changes
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         showAdminPanel();
@@ -147,8 +147,7 @@
         ui.start('#firebaseui-auth-container', uiConfig);
       }
     });
-
-    // ✅ Load Pending Messages for Moderation
+    // Load Pending Messages
     function loadPendingMessages() {
       const pendingRef = firebase.database().ref('pendingMessages');
       pendingRef.on('child_added', snapshot => {
@@ -171,8 +170,7 @@
         if (elem) elem.remove();
       });
     }
-
-    // ✅ Load Approved Messages
+    // Load Approved Messages
     function loadApprovedMessages() {
       const approvedRef = firebase.database().ref('messages');
       approvedRef.on('child_added', snapshot => {
@@ -194,34 +192,31 @@
         if (elem) elem.remove();
       });
     }
-
-    // ✅ Approve Message using Cloud Function
+    // Approve Message
     function approveMessage(key) {
       const approveMessageCallable = firebase.functions().httpsCallable('approveMessage');
       approveMessageCallable({ messageId: key })
         .then(result => {
           console.log('Message approved via Cloud Function:', result.data);
-          // The pending message UI will be updated via the child_removed listener.
+          // The pending message UI will update via child_removed event.
         })
         .catch(error => {
           console.error('Error approving message via Cloud Function:', error);
         });
     }
-
-    // ✅ Deny Message using Cloud Function
+    // Deny Message
     function denyMessage(key) {
       const denyMessageCallable = firebase.functions().httpsCallable('denyMessage');
       denyMessageCallable({ messageId: key })
         .then(result => {
           console.log('Message denied via Cloud Function:', result.data);
-          // The pending message UI will be updated via the child_removed listener.
+          // The pending message UI will update via child_removed event.
         })
         .catch(error => {
           console.error('Error denying message via Cloud Function:', error);
         });
     }
-
-    // ✅ Delete Approved Message directly from the database
+    // Delete Approved Message
     function deleteApprovedMessage(key) {
       firebase.database().ref('messages/' + key).remove()
         .then(() => {
@@ -231,8 +226,7 @@
           console.error('Error deleting approved message:', error);
         });
     }
-
-    // ✅ Sign Out Function
+    // Sign Out
     document.getElementById('sign-out').addEventListener('click', () => firebase.auth().signOut());
   </script>
 </body>
