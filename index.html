@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Gem Board</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Include flatpickr CSS from CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     /* Additional inline styles for the approved messages section */
     #approved-messages {
@@ -62,8 +64,8 @@
     
     <!-- Timer Container (hidden by default) -->
     <div id="timer-container" class="feature-container" style="display: none;">
-      <!-- Timer input will be masked -->
-      <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" />
+      <!-- Timer input now uses flatpickr -->
+      <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" readonly />
       <div id="timer-controls">
         <button id="startTimer">Start Timer</button>
       </div>
@@ -104,6 +106,7 @@
     <p>Scan this QR code with your mobile device to submit your gem or reflection.</p>
   </div>
   
+  <!-- Approved Messages Section (if needed elsewhere) -->
   <!-- Footer -->
   <footer>
     <p>&copy; Zain Nisar 2025</p>
@@ -111,12 +114,11 @@
   
   <!-- Include QRCode.js library for generating QR codes -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Include Inputmask library to enforce HH:MM:SS on the timer input -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.7/inputmask.min.js"></script>
+  <!-- Include flatpickr library for time picking -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <!-- Firebase Libraries -->
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database-compat.js"></script>
-  
   <script>
     // Firebase configuration
     const firebaseConfig = {
@@ -132,10 +134,17 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Apply input mask for timer input to enforce HH:MM:SS format
+    // Apply flatpickr time picker to timerDisplay, disabling manual input
     window.addEventListener('DOMContentLoaded', () => {
-      const timerInput = document.getElementById('timerDisplay');
-      Inputmask("99:99:99", { placeholder: "00:00:00" }).mask(timerInput);
+      flatpickr("#timerDisplay", {
+        enableTime: true,
+        noCalendar: true,
+        time_24hr: true,
+        enableSeconds: true,
+        dateFormat: "H:i:S",
+        defaultDate: "00:00:00",
+        allowInput: false  // Prevent manual editing
+      });
     });
 
     // Feature buttons to control the main display containers
@@ -149,7 +158,7 @@
     const stopwatchContainer = document.getElementById("stopwatch-container");
     const approvedMessagesDiv = document.getElementById("approved-messages");
 
-    // Clock button: show clock, hide timer/stopwatch and approved messages.
+    // Clock button: show clock, hide approved messages
     btnClock.addEventListener("click", () => {
       approvedMessagesDiv.style.display = "none";
       clockContainer.style.display = "flex";
@@ -157,7 +166,7 @@
       stopwatchContainer.style.display = "none";
     });
 
-    // Timer button: show timer, hide others.
+    // Timer button: show timer, hide approved messages
     btnTimer.addEventListener("click", () => {
       approvedMessagesDiv.style.display = "none";
       clockContainer.style.display = "none";
@@ -165,7 +174,7 @@
       stopwatchContainer.style.display = "none";
     });
 
-    // Stopwatch button: show stopwatch, hide others.
+    // Stopwatch button: show stopwatch, hide approved messages
     btnStopwatch.addEventListener("click", () => {
       approvedMessagesDiv.style.display = "none";
       clockContainer.style.display = "none";
@@ -173,7 +182,7 @@
       stopwatchContainer.style.display = "flex";
     });
 
-    // Gems/Questions button: show approved messages and hide feature containers.
+    // Gems/Questions button: show approved messages and hide feature containers
     btnGems.addEventListener("click", () => {
       clockContainer.style.display = "none";
       timerContainer.style.display = "none";
