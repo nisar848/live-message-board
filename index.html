@@ -7,19 +7,15 @@
   <title>Live Gem Board</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Additional inline styles for the new toggle button and approved messages section */
+    /* Additional inline styles for the approved messages section */
     #approved-messages {
-      width: 90%;
-      max-width: 800px;
-      margin: 20px auto;
+      width: 100%;
+      height: 100%;
+      /* Match the main display container's area */
+      display: none; /* Hidden by default */
+      text-align: center;
       padding: 20px;
-      border-radius: 15px;
-      background: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
-      max-height: 70vh;
-      overflow-y: auto;
-      display: block; /* Hidden by default */
-      text-align: left;
+      box-sizing: border-box;
     }
     #approved-messages h2 {
       margin-top: 0;
@@ -27,9 +23,10 @@
     .message {
       border: 1px solid rgba(255,255,255,0.5);
       padding: 10px;
-      margin-bottom: 10px;
+      margin: 10px auto;
       border-radius: 8px;
       background: rgba(255,255,255,0.3);
+      max-width: 350px;
     }
     .message p {
       margin: 5px 0;
@@ -46,8 +43,8 @@
     <h1>Live Gem Board</h1>
   </header>
   
-  <!-- Main Display Container: Centers the feature panels and holds the feature buttons -->
-  <div id="main-display">
+  <!-- Main Display Container: This container will either show the clock (or other feature containers) or the approved messages -->
+  <div id="main-display" style="position: relative; width: 90%; margin: 20px auto; padding: 20px;">
     <!-- Clock Container (default view) -->
     <div id="clock-container" class="feature-container">
       <div id="clock" class="digital-display">00:00:00</div>
@@ -78,8 +75,14 @@
       </div>
     </div>
     
+    <!-- Approved Messages Section placed inside main-display -->
+    <div id="approved-messages">
+      <h2>Gems/Questions</h2>
+      <div id="messages-container"></div>
+    </div>
+    
     <!-- Feature Buttons (positioned absolutely at the bottom-center of main-display) -->
-    <div id="feature-buttons">
+    <div id="feature-buttons" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);">
       <button id="btnClock">Clock</button>
       <button id="btnTimer">Timer</button>
       <button id="btnStopwatch">Stopwatch</button>
@@ -95,12 +98,6 @@
     <!-- QR Code display for message submission -->
     <div id="qr-code"></div>
     <p>Scan this QR code with your mobile device to submit your gem or reflection.</p>
-  </div>
-  
-  <!-- Approved Messages Section (separate from main-display) -->
-  <div id="approved-messages">
-    <h2>Gems/Questions</h2>
-    <div id="messages-container"></div>
   </div>
   
   <!-- Footer -->
@@ -162,7 +159,6 @@
     function loadApprovedMessages() {
       console.log("Loading approved messages...");
       const messagesRef = firebase.database().ref('messages');
-      // Use once('value') to load all existing approved messages
       messagesRef.once('value').then(snapshot => {
         snapshot.forEach(childSnap => {
           const msg = childSnap.val();
