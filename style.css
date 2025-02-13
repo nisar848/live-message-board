@@ -19,17 +19,15 @@
   }
 }
 
-/* Existing styles from your file */
-
-/* Use the full viewport and prevent scrolling */
+/* Use the full viewport width but allow the height to adjust */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh; /* Allow content to expand if needed */
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  overflow: hidden;
+  overflow-x: hidden;  /* Hide horizontal overflow, but allow vertical scrolling */
 }
 
 /* Body as a flex container dividing the viewport vertically */
@@ -38,7 +36,7 @@ body {
   flex-direction: column;
 }
 
-/* Main display container (Clock/Timer/Stopwatch) occupies 50% of the viewport */
+/* Main display container (Clock/Timer/Stopwatch) occupies 50% of the viewport on larger screens */
 #main-display {
   flex: 0 0 50%;
   position: relative;
@@ -48,20 +46,20 @@ body {
   justify-content: center;
 }
 
-/* Message board occupies the remaining 50% */
+/* Message board occupies the remaining space */
 #message-board {
   width: 90%;
   margin: 20px auto;
   padding: 20px;
   border-radius: 10px;
-  background: none !important;            /* Remove any background shorthand */
-  background-color: transparent !important; /* Force transparent background */
-  background-image: none !important;       /* Remove any background image */
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   text-align: center;
-  color: #fff; /* White text for contrast */
+  color: #fff;
 }
 
 /* Glassmorphism styling for feature containers (Clock, Timer, Stopwatch) */
@@ -158,5 +156,11 @@ body {
 @media (max-width: 600px) {
   .digital-display {
     font-size: 1.5em;
+  }
+  /* Adjust main display container and message board for smaller screens */
+  #main-display, #message-board {
+    width: 95%;
+    margin: 10px auto;
+    padding: 10px;
   }
 }
