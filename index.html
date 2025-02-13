@@ -46,8 +46,8 @@
     <h1>Live Gem Board</h1>
   </header>
   
-  <!-- Main Display Container: Centers the feature panels and holds the feature buttons -->
-  <div id="main-display">
+  <!-- Main Display Container: Shows feature panels and holds feature buttons -->
+  <div id="main-display" style="position: relative; width: 90%; margin: 20px auto; padding: 20px;">
     <!-- Clock Container (default view) -->
     <div id="clock-container" class="feature-container">
       <div id="clock" class="digital-display">00:00:00</div>
@@ -62,6 +62,7 @@
     
     <!-- Timer Container (hidden by default) -->
     <div id="timer-container" class="feature-container" style="display: none;">
+      <!-- Timer input will be masked -->
       <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" />
       <div id="timer-controls">
         <button id="startTimer">Start Timer</button>
@@ -110,9 +111,12 @@
   
   <!-- Include QRCode.js library for generating QR codes -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Include Inputmask library to enforce HH:MM:SS on the timer input -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.7/inputmask.min.js"></script>
   <!-- Firebase Libraries -->
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database-compat.js"></script>
+  
   <script>
     // Firebase configuration
     const firebaseConfig = {
@@ -128,6 +132,12 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Apply input mask for timer input to enforce HH:MM:SS format
+    window.addEventListener('DOMContentLoaded', () => {
+      const timerInput = document.getElementById('timerDisplay');
+      Inputmask("99:99:99", { placeholder: "00:00:00" }).mask(timerInput);
+    });
+
     // Feature buttons to control the main display containers
     const btnClock = document.getElementById("btnClock");
     const btnTimer = document.getElementById("btnTimer");
@@ -139,7 +149,7 @@
     const stopwatchContainer = document.getElementById("stopwatch-container");
     const approvedMessagesDiv = document.getElementById("approved-messages");
 
-    // Clock button shows clock and hides approved messages
+    // Clock button: show clock, hide timer/stopwatch and approved messages.
     btnClock.addEventListener("click", () => {
       approvedMessagesDiv.style.display = "none";
       clockContainer.style.display = "flex";
@@ -147,7 +157,7 @@
       stopwatchContainer.style.display = "none";
     });
 
-    // Timer button shows timer and hides approved messages
+    // Timer button: show timer, hide others.
     btnTimer.addEventListener("click", () => {
       approvedMessagesDiv.style.display = "none";
       clockContainer.style.display = "none";
@@ -155,7 +165,7 @@
       stopwatchContainer.style.display = "none";
     });
 
-    // Stopwatch button shows stopwatch and hides approved messages
+    // Stopwatch button: show stopwatch, hide others.
     btnStopwatch.addEventListener("click", () => {
       approvedMessagesDiv.style.display = "none";
       clockContainer.style.display = "none";
@@ -163,16 +173,12 @@
       stopwatchContainer.style.display = "flex";
     });
 
-    // Gems/Questions button dedicated to showing approved messages
+    // Gems/Questions button: show approved messages and hide feature containers.
     btnGems.addEventListener("click", () => {
-      // Use getComputedStyle to check the actual display style of clockContainer.
-      const clockDisplay = window.getComputedStyle(clockContainer).display;
-      // When Gems button is clicked, hide all feature containers and show approved messages.
       clockContainer.style.display = "none";
       timerContainer.style.display = "none";
       stopwatchContainer.style.display = "none";
       approvedMessagesDiv.style.display = "block";
-      // Load approved messages in realtime.
       loadApprovedMessagesRealtime();
     });
 
@@ -182,7 +188,6 @@
       messagesRef.on('child_added', snapshot => {
         const msg = snapshot.val();
         const key = snapshot.key;
-        // Check if the message is already in the DOM
         if (!document.getElementById('approved-' + key)) {
           const messageDiv = document.createElement('div');
           messageDiv.className = 'message';
