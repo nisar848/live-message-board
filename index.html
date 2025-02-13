@@ -137,7 +137,7 @@
     let messagesLoaded = false;
 
     btnGems.addEventListener("click", () => {
-      // Use getComputedStyle to check the actual display style.
+      // Use getComputedStyle to check the actual display style of clockContainer.
       const clockDisplay = window.getComputedStyle(clockContainer).display;
       if (clockDisplay !== "none") {
         // Hide feature containers and show approved messages.
@@ -152,7 +152,7 @@
         }
       } else {
         // Show the clock container and hide approved messages.
-        clockContainer.style.display = "flex"; // Adjust if needed
+        clockContainer.style.display = "flex"; // or "block" as needed
         approvedMessagesDiv.style.display = "none";
         btnGems.textContent = "Gems/Questions";
       }
@@ -162,31 +162,23 @@
     function loadApprovedMessages() {
       console.log("Loading approved messages...");
       const messagesRef = firebase.database().ref('messages');
-      messagesRef.on('child_added', snapshot => {
-        const msg = snapshot.val();
-        const key = snapshot.key;
-        console.log("Approved message added:", key, msg);
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message';
-        messageDiv.innerHTML = `
-          <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
-          <p>${msg.text}</p>
-          <button onclick="deleteApprovedMessage('${key}')">Delete</button>
-        `;
-        document.getElementById('messages-container').appendChild(messageDiv);
-      });
-      // Optionally, add a child_removed listener to remove messages from the DOM.
-    }
-
-    // Delete Approved Message
-    function deleteApprovedMessage(key) {
-      firebase.database().ref('messages/' + key).remove()
-        .then(() => {
-          console.log('Approved message deleted:', key);
-        })
-        .catch(error => {
-          console.error('Error deleting approved message:', error);
+      // Use once('value') to load all existing approved messages
+      messagesRef.once('value').then(snapshot => {
+        snapshot.forEach(childSnap => {
+          const msg = childSnap.val();
+          const key = childSnap.key;
+          console.log("Approved message loaded:", key, msg);
+          const messageDiv = document.createElement('div');
+          messageDiv.className = 'message';
+          messageDiv.innerHTML = `
+            <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
+            <p>${msg.text}</p>
+          `;
+          document.getElementById('messages-container').appendChild(messageDiv);
         });
+      }).catch(error => {
+        console.error("Error loading approved messages:", error);
+      });
     }
   </script>
   <!-- Link to your existing script.js if needed -->
