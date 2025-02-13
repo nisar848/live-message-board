@@ -102,7 +102,7 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
 
 /**
  * Scheduled function to delete all users and reset environment every 3 days.
- * The schedule has been updated to a cron expression with explicit timezone.
+ * (Existing function; deletes users, admins, and resets the admin flag.)
  */
 exports.resetEnvironment = functions.pubsub
     .schedule("0 0 */3 * *")
@@ -120,6 +120,24 @@ exports.resetEnvironment = functions.pubsub
         console.log("All users deleted. Environment reset.");
       } catch (error) {
         console.error("Error resetting environment:", error);
+      }
+      return null;
+    });
+
+/**
+ * Scheduled function to delete all messages every 3 days.
+ * This function clears both the "messages" and "pendingMessages" nodes.
+ */
+exports.deleteMessages = functions.pubsub
+    .schedule("0 0 */3 * *")
+    .timeZone("UTC")
+    .onRun(async () => {
+      try {
+        await admin.database().ref("messages").remove();
+        await admin.database().ref("pendingMessages").remove();
+        console.log("All messages and pending messages deleted.");
+      } catch (error) {
+        console.error("Error deleting messages:", error);
       }
       return null;
     });
