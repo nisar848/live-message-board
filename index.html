@@ -117,30 +117,38 @@
     <p>&copy; Zain Nisar 2025</p>
   </footer>
   
-  <!-- Include QRCode.js library for generating QR codes -->
+  <!-- Include external libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Include flatpickr library for time picking -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <!-- Firebase Libraries -->
-  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database-compat.js"></script>
-  <script>
+  
+  <!-- Firebase and application script as a module -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+    import { getDatabase, ref, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
+
     // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
       authDomain: "live-message-board.firebaseapp.com",
-      databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/",
       projectId: "live-message-board",
       storageBucket: "live-message-board.firebasestorage.app",
       messagingSenderId: "465980009336",
-      appId: "1:465980009336:web:38b62c2587ded00596b68d"
+      appId: "1:465980009336:web:38b62c2587ded00596b68d",
+      measurementId: "G-4KCL1DYY8R"
     };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
 
-    // Apply flatpickr time picker to timerDisplay, disabling manual input.
-    window.addEventListener('DOMContentLoaded', () => {
+    // Initialize Firebase and services
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+
+    // Wait for the DOM to load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize flatpickr for the timer display
       const timerInput = document.getElementById('timerDisplay');
       window.fpInstance = flatpickr(timerInput, {
         enableTime: true,
@@ -149,147 +157,184 @@
         enableSeconds: true,
         dateFormat: "H:i:S",
         defaultDate: "00:00:00",
-        allowInput: false  // Prevent manual editing
+        allowInput: false
       });
-    });
 
-    // Timer variables
-    let timerInterval;
+      // Feature buttons and containers
+      const btnClock = document.getElementById("btnClock");
+      const btnTimer = document.getElementById("btnTimer");
+      const btnStopwatch = document.getElementById("btnStopwatch");
+      const btnGems = document.getElementById("btnGems");
 
-    // Feature buttons to control the main display containers
-    const btnClock = document.getElementById("btnClock");
-    const btnTimer = document.getElementById("btnTimer");
-    const btnStopwatch = document.getElementById("btnStopwatch");
-    const btnGems = document.getElementById("btnGems");
+      const clockContainer = document.getElementById("clock-container");
+      const timerContainer = document.getElementById("timer-container");
+      const stopwatchContainer = document.getElementById("stopwatch-container");
+      const approvedMessagesDiv = document.getElementById("approved-messages");
 
-    const clockContainer = document.getElementById("clock-container");
-    const timerContainer = document.getElementById("timer-container");
-    const stopwatchContainer = document.getElementById("stopwatch-container");
-    const approvedMessagesDiv = document.getElementById("approved-messages");
+      btnClock.addEventListener("click", () => {
+        approvedMessagesDiv.style.display = "none";
+        clockContainer.style.display = "flex";
+        timerContainer.style.display = "none";
+        stopwatchContainer.style.display = "none";
+      });
 
-    // Clock button: show clock, hide timer/stopwatch and approved messages.
-    btnClock.addEventListener("click", () => {
-      approvedMessagesDiv.style.display = "none";
-      clockContainer.style.display = "flex";
-      timerContainer.style.display = "none";
-      stopwatchContainer.style.display = "none";
-    });
+      btnTimer.addEventListener("click", () => {
+        approvedMessagesDiv.style.display = "none";
+        clockContainer.style.display = "none";
+        timerContainer.style.display = "flex";
+        stopwatchContainer.style.display = "none";
+      });
 
-    // Timer button: show timer, hide others.
-    btnTimer.addEventListener("click", () => {
-      approvedMessagesDiv.style.display = "none";
-      clockContainer.style.display = "none";
-      timerContainer.style.display = "flex";
-      stopwatchContainer.style.display = "none";
-    });
+      btnStopwatch.addEventListener("click", () => {
+        approvedMessagesDiv.style.display = "none";
+        clockContainer.style.display = "none";
+        timerContainer.style.display = "none";
+        stopwatchContainer.style.display = "flex";
+      });
 
-    // Stopwatch button: show stopwatch, hide others.
-    btnStopwatch.addEventListener("click", () => {
-      approvedMessagesDiv.style.display = "none";
-      clockContainer.style.display = "none";
-      timerContainer.style.display = "none";
-      stopwatchContainer.style.display = "flex";
-    });
+      btnGems.addEventListener("click", () => {
+        clockContainer.style.display = "none";
+        timerContainer.style.display = "none";
+        stopwatchContainer.style.display = "none";
+        approvedMessagesDiv.style.display = "block";
+        loadApprovedMessagesRealtime();
+      });
 
-    // Gems/Questions button: show approved messages and hide feature containers.
-    btnGems.addEventListener("click", () => {
-      clockContainer.style.display = "none";
-      timerContainer.style.display = "none";
-      stopwatchContainer.style.display = "none";
-      approvedMessagesDiv.style.display = "block";
-      loadApprovedMessagesRealtime();
-    });
-
-    // Timer controls: Start, Stop, and Reset.
-    document.getElementById('startTimer').addEventListener('click', () => {
-      const timeInputStr = document.getElementById('timerDisplay').value;
-      let totalSeconds = parseTime(timeInputStr);
-      
-      if (isNaN(totalSeconds)) {
-        alert("Please enter a valid time in HH:MM:SS format.");
-        return;
+      // Clock: update every second based on selected time format
+      function updateClock() {
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        const timeFormat = document.getElementById('timeFormat').value;
+        let period = '';
+        if (timeFormat === '12') {
+          period = hours >= 12 ? ' PM' : ' AM';
+          hours = hours % 12;
+          if (hours === 0) hours = 12;
+        }
+        document.getElementById('clock').textContent =
+          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}${period}`;
       }
-      
-      const timerDisplayElem = document.getElementById('timerDisplay');
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (totalSeconds > 0) {
-          timerDisplayElem.value = formatTime(totalSeconds);
-          totalSeconds--;
+      updateClock();
+      setInterval(updateClock, 1000);
+      document.getElementById('timeFormat').addEventListener('change', updateClock);
+
+      // Timer: helper functions and controls
+      let timerInterval;
+      function formatTime(totalSeconds) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+      function parseTime(timeStr) {
+        const parts = timeStr.split(':');
+        if (parts.length !== 3) return NaN;
+        const hours = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+        const seconds = parseInt(parts[2], 10);
+        return hours * 3600 + minutes * 60 + seconds;
+      }
+      document.getElementById('startTimer').addEventListener('click', () => {
+        const timeInputStr = document.getElementById('timerDisplay').value;
+        let totalSeconds = parseTime(timeInputStr);
+        if (isNaN(totalSeconds)) {
+          alert("Please enter a valid time in HH:MM:SS format.");
+          return;
+        }
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (totalSeconds > 0) {
+            window.fpInstance.setDate(formatTime(totalSeconds), true);
+            totalSeconds--;
+          } else {
+            window.fpInstance.setDate("Time is up!", true);
+            clearInterval(timerInterval);
+          }
+        }, 1000);
+      });
+      document.getElementById('stopTimer').addEventListener('click', () => {
+        clearInterval(timerInterval);
+      });
+      document.getElementById('resetTimer').addEventListener('click', () => {
+        clearInterval(timerInterval);
+        window.fpInstance.setDate("00:00:00", true);
+      });
+
+      // Stopwatch: count up and display
+      let stopwatchInterval;
+      let stopwatchSeconds = 0;
+      const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+      document.getElementById('startStopwatch').addEventListener('click', () => {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = setInterval(() => {
+          stopwatchSeconds++;
+          stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
+        }, 1000);
+      });
+      document.getElementById('stopStopwatch').addEventListener('click', () => {
+        clearInterval(stopwatchInterval);
+      });
+      document.getElementById('resetStopwatch').addEventListener('click', () => {
+        clearInterval(stopwatchInterval);
+        stopwatchSeconds = 0;
+        stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
+      });
+
+      // Fullscreen toggle
+      document.getElementById('fullscreenToggle').addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().then(() => {
+            document.getElementById('fullscreenToggle').textContent = "✕";
+          }).catch(err => {
+            console.error(`Error enabling fullscreen: ${err.message}`);
+          });
         } else {
-          timerDisplayElem.value = "Time is up!";
-          clearInterval(timerInterval);
+          document.exitFullscreen().then(() => {
+            document.getElementById('fullscreenToggle').textContent = "⛶";
+          }).catch(err => {
+            console.error(`Error exiting fullscreen: ${err.message}`);
+          });
         }
-      }, 1000);
-    });
-    
-    document.getElementById('stopTimer').addEventListener('click', () => {
-      clearInterval(timerInterval);
-    });
-    
-    document.getElementById('resetTimer').addEventListener('click', () => {
-      clearInterval(timerInterval);
-      // Reset the timer input to default using the flatpickr instance.
-      window.fpInstance.setDate("00:00:00", true);
-    });
-    
-    // Helper function to format seconds as HH:MM:SS
-    function formatTime(totalSeconds) {
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-    
-    // Helper function to parse a "HH:MM:SS" string into total seconds
-    function parseTime(timeStr) {
-      const parts = timeStr.split(':');
-      if (parts.length !== 3) {
-        return NaN;
-      }
-      const hours = parseInt(parts[0], 10);
-      const minutes = parseInt(parts[1], 10);
-      const seconds = parseInt(parts[2], 10);
-      return hours * 3600 + minutes * 60 + seconds;
-    }
+      });
 
-    // Realtime loading of approved messages
-    function loadApprovedMessagesRealtime() {
-      const messagesRef = firebase.database().ref('messages');
-      messagesRef.on('child_added', snapshot => {
-        const msg = snapshot.val();
-        const key = snapshot.key;
-        if (!document.getElementById('approved-' + key)) {
-          const messageDiv = document.createElement('div');
-          messageDiv.className = 'message';
-          messageDiv.id = 'approved-' + key;
-          messageDiv.innerHTML = `
-            <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
-            <p>${msg.text}</p>
-          `;
-          document.getElementById('messages-container').appendChild(messageDiv);
-        }
+      // QR Code Generation for message submission
+      const qrCodeContainer = document.getElementById('qr-code');
+      const submissionUrl = "https://nisar848.github.io/live-message-board/submit.html";
+      new QRCode(qrCodeContainer, {
+        text: submissionUrl,
+        width: 150,
+        height: 150,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
       });
-      messagesRef.on('child_removed', snapshot => {
-        const key = snapshot.key;
-        const elem = document.getElementById('approved-' + key);
-        if (elem) elem.remove();
-      });
-    }
-    
-    // QR Code Generation for Message Submission
-    const qrCodeContainer = document.getElementById('qr-code');
-    const submissionUrl = "https://nisar848.github.io/live-message-board/submit.html"; 
-    new QRCode(qrCodeContainer, {
-      text: submissionUrl,
-      width: 150,
-      height: 150,
-      colorDark: "#000000",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
+
+      // Realtime loading of approved messages using Firebase modular API
+      function loadApprovedMessagesRealtime() {
+        const messagesRef = ref(database, 'messages');
+        onChildAdded(messagesRef, snapshot => {
+          const msg = snapshot.val();
+          const key = snapshot.key;
+          if (!document.getElementById('approved-' + key)) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.id = 'approved-' + key;
+            messageDiv.innerHTML = `
+              <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
+              <p>${msg.text}</p>
+            `;
+            document.getElementById('messages-container').appendChild(messageDiv);
+          }
+        });
+        onChildRemoved(messagesRef, snapshot => {
+          const key = snapshot.key;
+          const elem = document.getElementById('approved-' + key);
+          if (elem) elem.remove();
+        });
+      }
     });
   </script>
-  <!-- Link to your existing script.js if needed -->
-  <script type="module" src="script.js"></script>
 </body>
 </html>
