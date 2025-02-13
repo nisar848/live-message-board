@@ -1,21 +1,9 @@
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
-const path = require("path");
-const fs = require("fs");
 
-// Load service account key securely from environment variable
-const serviceAccountPath =
-  process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-  path.join(require("os").homedir(), ".firebase-adminsdk.json");
-
-if (!fs.existsSync(serviceAccountPath)) {
-  console.error("Service account key file not found:", serviceAccountPath);
-  process.exit(1);
-}
-
-// Initialize Firebase Admin SDK
+// Initialize Firebase Admin SDK using default
+// credentials provided in Cloud Functions
 admin.initializeApp({
-  credential: admin.credential.cert(require(serviceAccountPath)),
   databaseURL: "https://live-message-board-default-rtdb.firebaseio.com/",
 });
 
@@ -56,6 +44,8 @@ exports.setFirstAdmin = functions.auth.user().onCreate(async (user) => {
 
 /**
  * Callable function to allow an admin to grant admin privileges to other users.
+ * Instead of just accepting a UID, this function accepts an identifier
+ * (UID, email, or phone number) and attempts to find the user accordingly.
  */
 exports.addAdmin = functions.https.onCall(async (data, context) => {
   if (!context.auth || !context.auth.token.admin) {
@@ -65,41 +55,71 @@ exports.addAdmin = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const {userId} = data;
-  if (!userId) {
-    throw new
-    functions.https.HttpsError("invalid-argument", "User ID is required.");
+  const {identifier} = data;
+  if (!identifier) {
+    throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Identifier is required.",
+    );
   }
 
+  let userRecord;
   try {
-    await admin.auth().setCustomUserClaims(userId, {admin: true});
-    await adminsRef.child(userId).set(true);
-    console.log("Admin added:", userId);
+    // Try to get user by UID.
+    try {
+      userRecord = await admin.auth().getUser(identifier);
+    } catch (err) {
+      // If not found by UID, try by email.
+      try {
+        userRecord = await admin.auth().getUserByEmail(identifier);
+      } catch (err2) {
+        // If still not found, try by phone number.
+        userRecord = await admin.auth().getUserByPhoneNumber(identifier);
+      }
+    }
+
+    if (!userRecord) {
+      throw new functions.https.HttpsError(
+          "not-found",
+          "No user found with the provided identifier.",
+      );
+    }
+
+    // Set custom admin claim.
+    await admin.auth().setCustomUserClaims(userRecord.uid, {admin: true});
+    // Update the admins reference (store either email or phone).
+    await adminsRef.child(userRecord.uid).set({
+      email: userRecord.email || userRecord.phoneNumber,
+    });
+    console.log("Admin added:", userRecord.uid);
     return {success: true, message: "User granted admin privileges."};
   } catch (error) {
     console.error("Error adding admin:", error);
-    throw new
-    functions.https.HttpsError("internal", "Could not grant admin privileges.");
+    throw new functions.https.HttpsError("internal",
+        "Could not grant admin privileges.");
   }
 });
 
 /**
  * Scheduled function to delete all users and reset environment every 3 days.
+ * The schedule has been updated to a cron expression with explicit timezone.
  */
-exports.resetEnvironment =
-functions.pubsub.schedule("every 3 days").onRun(async () => {
-  try {
-    const listUsersResult = await admin.auth().listUsers();
-    const deletePromises = listUsersResult.users.map((user) => {
-      console.log("Deleting user:", user.uid);
-      return admin.auth().deleteUser(user.uid);
+exports.resetEnvironment = functions.pubsub
+    .schedule("0 0 */3 * *")
+    .timeZone("UTC")
+    .onRun(async () => {
+      try {
+        const listUsersResult = await admin.auth().listUsers();
+        const deletePromises = listUsersResult.users.map((user) => {
+          console.log("Deleting user:", user.uid);
+          return admin.auth().deleteUser(user.uid);
+        });
+        await Promise.all(deletePromises);
+        await adminsRef.remove();
+        await adminFlagRef.set(false);
+        console.log("All users deleted. Environment reset.");
+      } catch (error) {
+        console.error("Error resetting environment:", error);
+      }
+      return null;
     });
-    await Promise.all(deletePromises);
-    await adminsRef.remove();
-    await adminFlagRef.set(false);
-    console.log("All users deleted. Environment reset.");
-  } catch (error) {
-    console.error("Error resetting environment:", error);
-  }
-  return null;
-});
