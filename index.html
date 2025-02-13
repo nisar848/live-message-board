@@ -78,7 +78,7 @@
       </div>
     </div>
     
-    <!-- Approved Messages Section placed inside main-display so that when clock is hidden, approved messages appear -->
+    <!-- Approved Messages Section placed inside main-display -->
     <div id="approved-messages">
       <h2>Gems/Questions</h2>
       <div id="messages-container"></div>
@@ -89,7 +89,7 @@
       <button id="btnClock">Clock</button>
       <button id="btnTimer">Timer</button>
       <button id="btnStopwatch">Stopwatch</button>
-      <!-- Dedicated Gems/Questions Button (only shows approved messages) -->
+      <!-- Dedicated Gems/Questions Button -->
       <button id="btnGems">Gems/Questions</button>
     </div>
   </div>
@@ -128,30 +128,61 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Toggle Gems/Questions Button (dedicated button)
+    // Feature buttons to control the main display containers
+    const btnClock = document.getElementById("btnClock");
+    const btnTimer = document.getElementById("btnTimer");
+    const btnStopwatch = document.getElementById("btnStopwatch");
     const btnGems = document.getElementById("btnGems");
+
     const clockContainer = document.getElementById("clock-container");
     const timerContainer = document.getElementById("timer-container");
     const stopwatchContainer = document.getElementById("stopwatch-container");
     const approvedMessagesDiv = document.getElementById("approved-messages");
 
+    // Clock button shows clock and hides approved messages
+    btnClock.addEventListener("click", () => {
+      approvedMessagesDiv.style.display = "none";
+      clockContainer.style.display = "flex";
+      timerContainer.style.display = "none";
+      stopwatchContainer.style.display = "none";
+    });
+
+    // Timer button shows timer and hides approved messages
+    btnTimer.addEventListener("click", () => {
+      approvedMessagesDiv.style.display = "none";
+      clockContainer.style.display = "none";
+      timerContainer.style.display = "flex";
+      stopwatchContainer.style.display = "none";
+    });
+
+    // Stopwatch button shows stopwatch and hides approved messages
+    btnStopwatch.addEventListener("click", () => {
+      approvedMessagesDiv.style.display = "none";
+      clockContainer.style.display = "none";
+      timerContainer.style.display = "none";
+      stopwatchContainer.style.display = "flex";
+    });
+
+    // Gems/Questions button dedicated to showing approved messages
     btnGems.addEventListener("click", () => {
-      // When the Gems/Questions button is clicked, show approved messages and hide feature containers.
+      // Use getComputedStyle to check the actual display style of clockContainer.
+      const clockDisplay = window.getComputedStyle(clockContainer).display;
+      // When Gems button is clicked, hide all feature containers and show approved messages.
       clockContainer.style.display = "none";
       timerContainer.style.display = "none";
       stopwatchContainer.style.display = "none";
       approvedMessagesDiv.style.display = "block";
-      // No toggle back here; use the Clock button to return to clock view.
+      // Load approved messages in realtime.
       loadApprovedMessagesRealtime();
     });
 
-    // Real-time loading of approved messages (using realtime listeners)
+    // Realtime loading of approved messages
     function loadApprovedMessagesRealtime() {
       const messagesRef = firebase.database().ref('messages');
       messagesRef.on('child_added', snapshot => {
         const msg = snapshot.val();
         const key = snapshot.key;
-        // Check if the message is already added to avoid duplicates
+        // Check if the message is already in the DOM
         if (!document.getElementById('approved-' + key)) {
           const messageDiv = document.createElement('div');
           messageDiv.className = 'message';
