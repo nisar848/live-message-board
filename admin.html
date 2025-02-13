@@ -15,7 +15,7 @@
       max-width: 600px;
       text-align: center;
     }
-    #firebaseui-auth-container, #admin-content, #error-message {
+    #firebaseui-auth-container, #admin-content, #error-message, #moderation-panel {
       margin: 20px auto;
       padding: 20px;
       border-radius: 15px;
@@ -24,18 +24,33 @@
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
+    #moderation-panel {
+      text-align: left;
+    }
+    .pending-message {
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .pending-message p {
+      margin: 5px 0;
+    }
+    .pending-message button {
+      margin-right: 10px;
+    }
     button {
       padding: 10px 20px;
       font-size: 1em;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255,255,255,0.3);
       color: #fff;
       transition: background 0.3s ease;
     }
     button:hover {
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255,255,255,0.5);
     }
   </style>
 </head>
@@ -49,21 +64,27 @@
   <div id="admin-panel">
     <h1>Admin Panel</h1>
     
-    <!-- FirebaseUI Auth Container: Shown when the user is not signed in -->
+    <!-- FirebaseUI Auth Container: Shown when user is not signed in -->
     <div id="firebaseui-auth-container"></div>
     
-    <!-- Admin Content: Shown only if the signed-in user has admin privileges -->
+    <!-- Admin Content: Shown only if the user has admin privileges -->
     <div id="admin-content" style="display: none;">
       <h2>Welcome, Admin!</h2>
       <p>This is your secure admin dashboard.</p>
       <button id="sign-out">Sign Out</button>
     </div>
     
-    <!-- Error Message: Shown if the signed-in user does not have admin privileges -->
+    <!-- Error Message: Shown if the signed-in user lacks admin privileges -->
     <div id="error-message" style="display: none;">
       <h2>Access Denied</h2>
       <p>You do not have admin privileges.</p>
       <button id="sign-out-error">Sign Out</button>
+    </div>
+    
+    <!-- Moderation Panel: Displays pending messages for approval/denial -->
+    <div id="moderation-panel" style="display: none;">
+      <h2>Pending Messages</h2>
+      <div id="pending-messages"></div>
     </div>
   </div>
   
@@ -75,6 +96,7 @@
   <!-- Load Firebase libraries (compat versions) from the CDN -->
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database-compat.js"></script>
   <!-- Optionally, if you need analytics: -->
   <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics-compat.js"></script>
   <!-- FirebaseUI -->
@@ -94,45 +116,104 @@
 
     // Initialize Firebase (using compat libraries)
     firebase.initializeApp(firebaseConfig);
-    // Optionally, initialize analytics
     if (firebase.analytics) {
       firebase.analytics();
     }
 
-    // FirebaseUI configuration
+    // FirebaseUI configuration: Enable Phone and Email sign-in only.
     const uiConfig = {
       callbacks: {
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-          // Prevent automatic redirect—handle UI changes via auth state listener.
-          return false;
+          return false; // Prevent auto redirect; UI updates via auth state listener.
         }
       },
       signInOptions: [
-        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        {
+          provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+          recaptchaParameters: {
+            size: 'invisible'  // Use invisible reCAPTCHA
+          },
+          defaultCountry: 'US' // Optional: Set default country for phone sign-in.
+        },
         firebase.auth.EmailAuthProvider.PROVIDER_ID
       ],
       signInFlow: 'popup'
     };
 
-    // Initialize FirebaseUI Auth instance and start widget.
+    // Initialize FirebaseUI Auth instance and start the widget.
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
     ui.start('#firebaseui-auth-container', uiConfig);
 
-    // Function to check if the signed-in user has admin privileges.
+    // Function to load pending messages for moderation.
+    function loadPendingMessages() {
+      const pendingRef = firebase.database().ref('pendingMessages');
+      pendingRef.on('child_added', snapshot => {
+        const msg = snapshot.val();
+        const key = snapshot.key;
+        // Create a container div for the message.
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'pending-message';
+        msgDiv.id = `pending-${key}`;
+        msgDiv.innerHTML = `
+          <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
+          <p>${msg.text}</p>
+        `;
+        // Create Approve button.
+        const approveBtn = document.createElement('button');
+        approveBtn.textContent = "Approve";
+        approveBtn.addEventListener('click', () => {
+          const approvedData = { ...msg, approved: true };
+          // Move message to "messages" node.
+          firebase.database().ref('messages').push(approvedData)
+            .then(() => {
+              // Remove from pendingMessages.
+              return firebase.database().ref(`pendingMessages/${key}`).remove();
+            })
+            .then(() => {
+              msgDiv.remove();
+            })
+            .catch(err => {
+              console.error("Error approving message:", err);
+            });
+        });
+        // Create Deny button.
+        const denyBtn = document.createElement('button');
+        denyBtn.textContent = "Deny";
+        denyBtn.style.marginLeft = "10px";
+        denyBtn.addEventListener('click', () => {
+          firebase.database().ref(`pendingMessages/${key}`).remove()
+            .then(() => {
+              msgDiv.remove();
+            })
+            .catch(err => {
+              console.error("Error denying message:", err);
+            });
+        });
+        msgDiv.appendChild(approveBtn);
+        msgDiv.appendChild(denyBtn);
+        // Append the message div to the pending messages container.
+        document.getElementById('pending-messages').appendChild(msgDiv);
+      });
+    }
+
+    // Function to check admin claims and update UI.
     async function checkAdmin() {
       const user = firebase.auth().currentUser;
       if (user) {
         try {
           const idTokenResult = await user.getIdTokenResult();
           if (idTokenResult.claims && idTokenResult.claims.admin) {
-            // User has admin claim: show admin content.
+            // User is an admin: show admin content and moderation panel.
             document.getElementById('firebaseui-auth-container').style.display = 'none';
             document.getElementById('admin-content').style.display = 'block';
             document.getElementById('error-message').style.display = 'none';
+            document.getElementById('moderation-panel').style.display = 'block';
+            loadPendingMessages();
           } else {
             // User is signed in but not an admin.
             document.getElementById('firebaseui-auth-container').style.display = 'none';
             document.getElementById('admin-content').style.display = 'none';
+            document.getElementById('moderation-panel').style.display = 'none';
             document.getElementById('error-message').style.display = 'block';
           }
         } catch (error) {
@@ -146,10 +227,11 @@
       if (user) {
         checkAdmin();
       } else {
-        // User is signed out; show FirebaseUI.
+        // If signed out, reset UI.
         document.getElementById('firebaseui-auth-container').style.display = 'block';
         document.getElementById('admin-content').style.display = 'none';
         document.getElementById('error-message').style.display = 'none';
+        document.getElementById('moderation-panel').style.display = 'none';
         ui.start('#firebaseui-auth-container', uiConfig);
       }
     });
