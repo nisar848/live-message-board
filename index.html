@@ -1,60 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <!-- Ensures the website is responsive on any device -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Live Gem Board</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Include flatpickr CSS from CDN -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <style>
-    /* Additional inline styles for the approved messages section */
-    #approved-messages {
-      width: 90%;
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 15px;
-      background: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
-      max-height: 70vh;
-      overflow-y: auto;
-      display: none; /* Hidden by default */
-      text-align: left;
-    }
-    #approved-messages h2 {
-      margin-top: 0;
-    }
-    .message {
-      border: 1px solid rgba(255,255,255,0.5);
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.3);
-    }
-    .message p {
-      margin: 5px 0;
-    }
-    /* Optionally hide the caret in the timer input to discourage editing */
-    #timerDisplay {
-      caret-color: transparent;
-    }
-  </style>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- flatpickr CSS from CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 </head>
 <body>
-  <!-- Fullscreen Toggle Button (fixed at top right) -->
+  <!-- Fullscreen Toggle -->
   <div id="fullscreen-container">
     <button id="fullscreenToggle" title="Toggle Fullscreen">⛶</button>
   </div>
-  
+
   <header>
     <h1>Live Gem Board</h1>
   </header>
-  
-  <!-- Main Display Container: Shows feature panels and holds feature buttons -->
-  <div id="main-display" style="position: relative; width: 90%; margin: 20px auto; padding: 20px;">
-    <!-- Clock Container (default view) -->
+
+  <!-- Main Display -->
+  <div id="main-display">
+    <!-- Clock -->
     <div id="clock-container" class="feature-container">
       <div id="clock" class="digital-display">00:00:00</div>
       <div id="clock-options">
@@ -65,10 +34,9 @@
         </select>
       </div>
     </div>
-    
-    <!-- Timer Container (hidden by default) -->
+
+    <!-- Timer -->
     <div id="timer-container" class="feature-container" style="display: none;">
-      <!-- Timer input uses flatpickr and is readonly -->
       <input type="text" id="timerDisplay" class="digital-display" value="00:00:00" readonly />
       <div id="timer-controls">
         <button id="startTimer">Start Timer</button>
@@ -76,8 +44,8 @@
         <button id="resetTimer">Reset Timer</button>
       </div>
     </div>
-    
-    <!-- Stopwatch Container (hidden by default) -->
+
+    <!-- Stopwatch -->
     <div id="stopwatch-container" class="feature-container" style="display: none;">
       <div id="stopwatchDisplay" class="digital-display">00:00:00</div>
       <div id="stopwatch-controls">
@@ -86,254 +54,39 @@
         <button id="resetStopwatch">Reset</button>
       </div>
     </div>
-    
-    <!-- Approved Messages Section placed inside main-display -->
+
+    <!-- Gems/Questions -->
     <div id="approved-messages">
       <h2>Gems/Questions</h2>
       <div id="messages-container"></div>
     </div>
-    
-    <!-- Feature Buttons (positioned absolutely at the bottom-center of main-display) -->
-    <div id="feature-buttons" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);">
+
+    <!-- Feature Buttons -->
+    <div id="feature-buttons">
       <button id="btnClock">Clock</button>
       <button id="btnTimer">Timer</button>
       <button id="btnStopwatch">Stopwatch</button>
-      <!-- Dedicated Gems/Questions Button -->
       <button id="btnGems">Gems/Questions</button>
     </div>
   </div>
-  
-  <!-- Live Message Board -->
+
+  <!-- Message Board -->
   <div id="message-board">
     <div id="messages"></div>
-    <!-- QR Code display for message submission -->
     <div id="qr-code"></div>
     <p>Scan this QR code with your mobile device to submit your gem or question.</p>
   </div>
-  
+
   <!-- Footer -->
   <footer>
     <p>&copy; Zain Nisar 2025</p>
   </footer>
-  
-  <!-- Include external libraries -->
+
+  <!-- External Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  
-  <!-- Firebase and application script as a module -->
-  <script type="module">
-    // Import Firebase modules
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-    import { getDatabase, ref, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-database.js";
 
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyD4EBkvYoXJ_pY6wrvvo7wD7CuNuygRHgY",
-      authDomain: "live-message-board.firebaseapp.com",
-      projectId: "live-message-board",
-      storageBucket: "live-message-board.firebasestorage.app",
-      messagingSenderId: "465980009336",
-      appId: "1:465980009336:web:38b62c2587ded00596b68d",
-      measurementId: "G-4KCL1DYY8R"
-    };
-
-    // Initialize Firebase and services
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-
-    // Wait for the DOM to load
-    document.addEventListener('DOMContentLoaded', () => {
-      // Initialize flatpickr for the timer display
-      const timerInput = document.getElementById('timerDisplay');
-      window.fpInstance = flatpickr(timerInput, {
-        enableTime: true,
-        noCalendar: true,
-        time_24hr: true,
-        enableSeconds: true,
-        dateFormat: "H:i:S",
-        defaultDate: "00:00:00",
-        allowInput: false
-      });
-
-      // Feature buttons and containers
-      const btnClock = document.getElementById("btnClock");
-      const btnTimer = document.getElementById("btnTimer");
-      const btnStopwatch = document.getElementById("btnStopwatch");
-      const btnGems = document.getElementById("btnGems");
-
-      const clockContainer = document.getElementById("clock-container");
-      const timerContainer = document.getElementById("timer-container");
-      const stopwatchContainer = document.getElementById("stopwatch-container");
-      const approvedMessagesDiv = document.getElementById("approved-messages");
-
-      btnClock.addEventListener("click", () => {
-        approvedMessagesDiv.style.display = "none";
-        clockContainer.style.display = "flex";
-        timerContainer.style.display = "none";
-        stopwatchContainer.style.display = "none";
-      });
-
-      btnTimer.addEventListener("click", () => {
-        approvedMessagesDiv.style.display = "none";
-        clockContainer.style.display = "none";
-        timerContainer.style.display = "flex";
-        stopwatchContainer.style.display = "none";
-      });
-
-      btnStopwatch.addEventListener("click", () => {
-        approvedMessagesDiv.style.display = "none";
-        clockContainer.style.display = "none";
-        timerContainer.style.display = "none";
-        stopwatchContainer.style.display = "flex";
-      });
-
-      btnGems.addEventListener("click", () => {
-        clockContainer.style.display = "none";
-        timerContainer.style.display = "none";
-        stopwatchContainer.style.display = "none";
-        approvedMessagesDiv.style.display = "block";
-        loadApprovedMessagesRealtime();
-      });
-
-      // Clock: update every second based on selected time format
-      function updateClock() {
-        const now = new Date();
-        let hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-        const timeFormat = document.getElementById('timeFormat').value;
-        let period = '';
-        if (timeFormat === '12') {
-          period = hours >= 12 ? ' PM' : ' AM';
-          hours = hours % 12;
-          if (hours === 0) hours = 12;
-        }
-        document.getElementById('clock').textContent =
-          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}${period}`;
-      }
-      updateClock();
-      setInterval(updateClock, 1000);
-      document.getElementById('timeFormat').addEventListener('change', updateClock);
-
-      // Timer: helper functions and controls
-      let timerInterval;
-      function formatTime(totalSeconds) {
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      }
-      function parseTime(timeStr) {
-        const parts = timeStr.split(':');
-        if (parts.length !== 3) return NaN;
-        const hours = parseInt(parts[0], 10);
-        const minutes = parseInt(parts[1], 10);
-        const seconds = parseInt(parts[2], 10);
-        return hours * 3600 + minutes * 60 + seconds;
-      }
-      document.getElementById('startTimer').addEventListener('click', () => {
-        const timeInputStr = document.getElementById('timerDisplay').value;
-        let totalSeconds = parseTime(timeInputStr);
-        if (isNaN(totalSeconds)) {
-          alert("Please enter a valid time in HH:MM:SS format.");
-          return;
-        }
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-          if (totalSeconds > 0) {
-            window.fpInstance.setDate(formatTime(totalSeconds), true);
-            totalSeconds--;
-          } else {
-            window.fpInstance.setDate("Time is up!", true);
-            clearInterval(timerInterval);
-          }
-        }, 1000);
-      });
-      document.getElementById('stopTimer').addEventListener('click', () => {
-        clearInterval(timerInterval);
-      });
-      document.getElementById('resetTimer').addEventListener('click', () => {
-        clearInterval(timerInterval);
-        window.fpInstance.setDate("00:00:00", true);
-      });
-
-      // Stopwatch: count up and display
-      let stopwatchInterval;
-      let stopwatchSeconds = 0;
-      const stopwatchDisplay = document.getElementById('stopwatchDisplay');
-      document.getElementById('startStopwatch').addEventListener('click', () => {
-        clearInterval(stopwatchInterval);
-        stopwatchInterval = setInterval(() => {
-          stopwatchSeconds++;
-          stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
-        }, 1000);
-      });
-      document.getElementById('stopStopwatch').addEventListener('click', () => {
-        clearInterval(stopwatchInterval);
-      });
-      document.getElementById('resetStopwatch').addEventListener('click', () => {
-        clearInterval(stopwatchInterval);
-        stopwatchSeconds = 0;
-        stopwatchDisplay.textContent = formatTime(stopwatchSeconds);
-      });
-
-      // Fullscreen toggle
-      document.getElementById('fullscreenToggle').addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().then(() => {
-            document.getElementById('fullscreenToggle').textContent = "✕";
-          }).catch(err => {
-            console.error(`Error enabling fullscreen: ${err.message}`);
-          });
-        } else {
-          document.exitFullscreen().then(() => {
-            document.getElementById('fullscreenToggle').textContent = "⛶";
-          }).catch(err => {
-            console.error(`Error exiting fullscreen: ${err.message}`);
-          });
-        }
-      });
-
-      // QR Code Generation for message submission
-      const qrCodeContainer = document.getElementById('qr-code');
-      const submissionUrl = "https://nisar848.github.io/live-message-board/submit.html";
-      new QRCode(qrCodeContainer, {
-        text: submissionUrl,
-        width: 150,
-        height: 150,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-
-      // Realtime loading of approved messages using Firebase modular API
-      function loadApprovedMessagesRealtime() {
-        const messagesRef = ref(database, 'messages');
-        onChildAdded(messagesRef, snapshot => {
-          const msg = snapshot.val();
-          const key = snapshot.key;
-          if (!document.getElementById('approved-' + key)) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            messageDiv.id = 'approved-' + key;
-            messageDiv.innerHTML = `
-              <p><strong>${msg.name}</strong> at ${new Date(msg.timestamp).toLocaleString()}</p>
-              <p>${msg.text}</p>
-            `;
-            document.getElementById('messages-container').appendChild(messageDiv);
-          }
-        });
-        onChildRemoved(messagesRef, snapshot => {
-          const key = snapshot.key;
-          const elem = document.getElementById('approved-' + key);
-          if (elem) elem.remove();
-        });
-      }
-    });
-  </script>
+  <!-- Your Main Script (Firebase, timers, etc.) -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>

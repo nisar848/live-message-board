@@ -1,4 +1,6 @@
-/* Admin Panel styling */
+/* ------------------ */
+/*     ADMIN PANEL    */
+/* ------------------ */
 #admin-panel {
   width: 90%;
   max-width: 800px;
@@ -7,11 +9,11 @@
   border-radius: 15px;
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 16px rgba(31, 38, 135, 0.25);
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: 80vh;       /* Constrain vertical size */
+  overflow-y: auto;       /* Scroll only within this panel if needed */
 }
 
-/* Adjust admin panel for smaller devices */
+/* Responsive layout for admin panel on smaller screens */
 @media (max-width: 600px) {
   #admin-panel {
     width: 95%;
@@ -19,15 +21,18 @@
   }
 }
 
-/* Use the full viewport width but allow the height to adjust naturally */
+/* ------------------ */
+/*     GLOBAL PAGE    */
+/* ------------------ */
+/* Use the full viewport width but allow the height to expand naturally */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh; /* Allow content to expand beyond the viewport */
+  min-height: 100vh;  /* Allow content to expand vertically */
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  overflow-x: hidden;  /* Hide horizontal overflow only */
+  overflow-x: hidden; /* Hide horizontal scroll only */
 }
 
 /* Body as a flex container dividing the viewport vertically */
@@ -36,7 +41,13 @@ body {
   flex-direction: column;
 }
 
-/* Main display container (Clock/Timer/Stopwatch) occupies 50% of the viewport on larger screens */
+/* -------------------------- */
+/*     MAIN DISPLAY AREA      */
+/* -------------------------- */
+/*
+  #main-display occupies roughly 50% of the viewport on larger screens,
+  holding Clock, Timer, and Stopwatch containers.
+*/
 #main-display {
   flex: 0 0 50%;
   position: relative;
@@ -46,14 +57,17 @@ body {
   justify-content: center;
 }
 
-/* Message board occupies the remaining space */
+/* -------------------------- */
+/*     MESSAGE BOARD AREA     */
+/* -------------------------- */
+/* The message board fills the remaining space below main-display. */
 #message-board {
   width: 90%;
   margin: 20px auto;
   padding: 20px;
   border-radius: 10px;
-  background: none !important;            /* Remove any background shorthand */
-  background-color: transparent !important; /* Force transparent background */
+  background: none !important;             /* Remove any background shorthand */
+  background-color: transparent !important;/* Force transparent background */
   background-image: none !important;       /* Remove any background image */
   box-shadow: none;
   backdrop-filter: none;
@@ -62,7 +76,10 @@ body {
   color: #fff; /* White text for contrast */
 }
 
-/* Glassmorphism styling for feature containers (Clock, Timer, Stopwatch) */
+/* -------------------------- */
+/*  GLASSMORPHISM CONTAINERS  */
+/* -------------------------- */
+/* Shared styling for Clock, Timer, Stopwatch sections */
 .feature-container {
   display: flex;
   flex-direction: column;
@@ -81,7 +98,9 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Digital display styling for Clock/Timer/Stopwatch */
+/* -------------------------- */
+/*   DIGITAL DISPLAY STYLE    */
+/* -------------------------- */
 .digital-display {
   font-size: 2em;
   margin-bottom: 5px;
@@ -90,20 +109,29 @@ body {
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Clock options styling */
+/* -------------------------- */
+/*    CLOCK OPTIONS STYLE     */
+/* -------------------------- */
 #clock-options {
   margin-top: 5px;
   text-align: center;
   color: #fff;
 }
 
-/* Feature Buttons: Positioned at the bottom-center of main-display */
+/* -------------------------- */
+/*   FEATURE BUTTONS STYLE    */
+/* -------------------------- */
+/*
+  Positioned at the bottom-center of the #main-display container,
+  allowing the user to switch between Clock, Timer, Stopwatch, and Gems.
+*/
 #feature-buttons {
   position: absolute;
   bottom: 5px;
   left: 50%;
   transform: translateX(-50%);
 }
+
 #feature-buttons button {
   margin: 0 5px;
   padding: 5px 10px;
@@ -116,17 +144,21 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: background 0.3s ease;
 }
+
 #feature-buttons button:hover {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Fullscreen toggle button positioning */
+/* -------------------------- */
+/* FULLSCREEN TOGGLE BUTTON   */
+/* -------------------------- */
 #fullscreen-container {
   position: fixed;
   top: 5px;
   right: 5px;
   z-index: 9999;
 }
+
 #fullscreenToggle {
   background: none;
   border: none;
@@ -135,30 +167,47 @@ body {
   color: #fff;
 }
 
-/* Message Board specific styling */
+/* -------------------------- */
+/*   MESSAGE BOARD STYLES     */
+/* -------------------------- */
 #message-board h2 {
   margin-top: 0;
   font-size: 1.5em;
 }
+
+/*
+  #messages: internal scroll if content exceeds 40% of the container’s
+  available height. Adjust this if you want more or less scroll area.
+*/
 #messages {
   margin: 5px 0;
   text-align: left;
   max-height: 40%;
   overflow-y: auto;
 }
+
+/* QR code container */
 #qr-code {
   margin: 10px auto;
   width: 150px;
   height: 150px;
 }
 
-/* Responsive adjustments */
+/* -------------------------- */
+/*     RESPONSIVE STYLES      */
+/* -------------------------- */
 @media (max-width: 600px) {
+  /* Smaller digital display text on small screens */
   .digital-display {
     font-size: 1.5em;
   }
-  /* Adjust main display container and message board for smaller screens */
-  #main-display, #message-board {
+
+  /*
+    Adjust #main-display and #message-board
+    to take up more vertical space on small devices
+  */
+  #main-display,
+  #message-board {
     width: 95%;
     margin: 10px auto;
     padding: 10px;
